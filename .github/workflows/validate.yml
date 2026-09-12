@@ -1,0 +1,53 @@
+name: Validate
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  server:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      - run: npm ci --ignore-scripts
+      - run: npm run typecheck
+      - run: npm test
+  ios:
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select an available iPhone simulator
+        run: |
+          xcrun simctl list devices available --json > devices.json
+          python3 - <<'PY' >> "$GITHUB_ENV"
+          import json
+          devices = json.load(open('devices.json'))['devices']
+          iphone = next(d for group in devices.values() for d in group if 'iPhone' in d['name'])
+          print('SIMULATOR_ID=' + iphone['udid'])
+          PY
+      - name: iOS unit tests and extension integration
+        run: >-
+          xcodebuild test -project NotifyGo.xcodeproj -scheme NotifyGo
+          -destination "platform=iOS Simulator,id=$SIMULATOR_ID"
+          -parallel-testing-enabled NO -jobs 2
+          -only-testing:NotifyGoTests CODE_SIGNING_ALLOWED=NO
+          -resultBundlePath TestResults.xcresult
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: ios-test-results
+          path: TestResults.xcresult

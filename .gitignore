@@ -2,3 +2,8 @@ xcuserdata/
 DerivedData/
 *.xcuserstate
 .DS_Store
+node_modules/
+*.sqlite*
+.env
+*.p8
+.validation-tools/
