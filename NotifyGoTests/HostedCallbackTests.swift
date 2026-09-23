@@ -29,6 +29,23 @@ final class HostedCallbackTests: XCTestCase {
         XCTAssertTrue(preview.fields.pretty.contains("premium"))
     }
 
+    func testHistorySearchMatchesVisibleFieldsIgnoringCaseAndDiacritics() throws {
+        let event = try decodeEvent(status: "sent")
+        XCTAssertTrue(event.matches(query: " cafe "))
+        XCTAssertTrue(event.matches(query: "PAYMENT"))
+        XCTAssertTrue(event.matches(query: "billing"))
+        XCTAssertTrue(event.matches(query: "收入"))
+        XCTAssertTrue(event.matches(query: "   "))
+        XCTAssertFalse(event.matches(query: "raw-only-value"))
+    }
+
+    func testHistoryDeliveryCategoriesKeepUnknownStatusesUnfiltered() throws {
+        XCTAssertEqual(try decodeEvent(status: "sent").deliveryCategory, .sent)
+        XCTAssertEqual(try decodeEvent(status: "failed").deliveryCategory, .failed)
+        XCTAssertEqual(try decodeEvent(status: "suppressed").deliveryCategory, .notSent)
+        XCTAssertNil(try decodeEvent(status: "future_status").deliveryCategory)
+    }
+
     func testUnsignedSampleIsExplicitlyDifferentFromAppleSignedInput() throws {
         var callback = HostedCallback()
         callback.parser = "apple"
@@ -37,6 +54,15 @@ final class HostedCallbackTests: XCTestCase {
         XCTAssertNil(fields["signedPayload"])
         XCTAssertEqual(fields["amount"], .number(9.99))
         XCTAssertEqual(fields["country"], .string("USA"))
+    }
+    private func decodeEvent(status: String) throws -> CallbackEvent {
+        let json = """
+        {"id":"event","createdAt":"2026-09-23T08:00:00.000Z","status":"\(status)",
+         "fields":{"secret":"raw-only-value"},
+         "notification":{"title":"Café Payment","body":"收入 received","url":"","sound":"default","level":"active","badge":"unchanged","badgeValue":0},
+         "source":{"name":"Billing","symbol":"bell","emoji":"","imageURL":"","color":"blue","tags":["finance"]},"test":false}
+        """
+        return try JSONDecoder().decode(CallbackEvent.self, from: Data(json.utf8))
     }
 }
 
