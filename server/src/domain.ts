@@ -7,8 +7,14 @@ const webURL = z.string().max(2048).refine(s => {
   try { return ['https:', 'http:'].includes(new URL(s.replace(/\{\{[^{}]+\}\}/g, 'value')).protocol); }
   catch { return false; }
 });
+const httpsURL = z.string().max(2048).refine(s => {
+  if (!s) return true;
+  try { return new URL(s.replace(/\{\{[^{}]+\}\}/g, 'value')).protocol === 'https:'; }
+  catch { return false; }
+});
 export const templateSchema = z.object({
-  title: z.string().min(1).max(200), body: z.string().max(1500), url: webURL.default(''),
+  title: z.string().min(1).max(200), subtitle: z.string().max(200).default(''), body: z.string().max(1500),
+  url: webURL.default(''), icon: httpsURL.default(''), group: z.string().max(100).default(''),
   sound: z.enum(['default', 'none']).default('default'),
   level: z.enum(['passive', 'active', 'time-sensitive']).default('active'),
   badge: z.enum(['unchanged', 'set', 'increment', 'clear']).default('unchanged'),
@@ -83,9 +89,12 @@ export function evaluate(callback: Callback, payload: Fields) {
     });
   }
   const notification = rule?.send ? {
-    ...rule.template, title: render(rule.template.title), body: render(rule.template.body), url: render(rule.template.url, true)
+    ...rule.template, title: render(rule.template.title), subtitle: render(rule.template.subtitle),
+    body: render(rule.template.body), url: render(rule.template.url, true),
+    icon: render(rule.template.icon, true), group: render(rule.template.group)
   } : null;
   if (notification && notification.url && !webURL.safeParse(notification.url).success) throw new Error('Invalid rendered URL');
+  if (notification && notification.icon && !httpsURL.safeParse(notification.icon).success) throw new Error('Invalid rendered icon URL');
   return {
     fields, trace, matchedRuleId: hit?.id ?? null, missing: [...missing],
     notification: missing.size === 0 ? notification : null,

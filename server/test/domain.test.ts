@@ -31,6 +31,18 @@ test('maps nested fields, renders scalars, and encodes only URL variables', () =
   assert.equal(result.notification?.url, 'https://example.com/item/A%2FB%20%26%20C?currency=USD');
 });
 
+test('renders Bark-compatible subtitle, group and icon fields', () => {
+  const c = config();
+  c.rules[0].template = {
+    ...c.rules[0].template,
+    subtitle: '{{environment}}', group: 'orders-{{country}}', icon: 'https://example.com/{{icon}}.png'
+  };
+  const result = evaluate(c, { title: 'Order', body: 'Paid', environment: 'Production', country: 'US', icon: 'paid badge' });
+  assert.equal(result.notification?.subtitle, 'Production');
+  assert.equal(result.notification?.group, 'orders-US');
+  assert.equal(result.notification?.icon, 'https://example.com/paid%20badge.png');
+});
+
 test('all five operators preserve types and missing fields never match', () => {
   const fields = { amount: 10, name: 'Monthly Premium', enabled: false };
   for (const [field, op, value] of [['amount', 'eq', 10], ['amount', 'ne', 2], ['name', 'contains', 'Premium'], ['amount', 'gt', 9], ['amount', 'lt', 11], ['enabled', 'eq', false]] as const)
@@ -76,9 +88,12 @@ test('rejects prototype aliases, duplicate rules, invalid numeric comparisons an
   assert.equal(callbackSchema.safeParse(c).success, false);
 });
 
-test('APNs payload keeps source metadata separate and honors sound, level and badge', () => {
+test('APNs payload keeps source metadata separate and honors display, grouping and delivery fields', () => {
   const c = config();
-  const n = { ...c.rules[0].template, title: 'Hello', body: 'World', sound: 'none' as const, level: 'passive' as const };
+  const n = {
+    ...c.rules[0].template, title: 'Hello', subtitle: 'Production', body: 'World', icon: 'https://example.com/icon.png',
+    group: 'servers', sound: 'none' as const, level: 'passive' as const
+  };
   const push = { callback: c, callbackId: 'callback', deviceToken: 'a'.repeat(64), environment: 'development', notification: n, eventId: 'event' };
   assert.equal('badge' in apnsPayload(push).aps, false);
   const p = apnsPayload({ ...push, badge: 0 });
@@ -86,5 +101,8 @@ test('APNs payload keeps source metadata separate and honors sound, level and ba
   assert.equal('sound' in p.aps, false);
   assert.equal(p.aps['interruption-level'], 'passive');
   assert.equal(p.aps['mutable-content'], 1);
+  assert.equal(p.aps.alert.subtitle, 'Production');
+  assert.equal(p.aps['thread-id'], 'servers');
+  assert.equal(p.notifygo.imageURL, 'https://example.com/icon.png');
   assert.equal(p.notifygo.name, 'Sales');
 });

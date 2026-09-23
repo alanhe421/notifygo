@@ -41,6 +41,8 @@ Management endpoints use `Authorization: Bearer <installation token>`, except re
 
 POST is required for numeric/boolean/nested fields. GET query values remain strings and are not coerced. Responses are marked `no-store`. Callback responses expose only processing status; detailed business fields and rule traces require installation authentication.
 
+Direct device pushes accept `title`, `subtitle`, `body`, `url`, `icon`, `group`, `sound`, `level`, `badge` and `badgeValue`. `icon` must be an HTTPS URL and is downloaded by the notification service extension; `group` maps to APNs `thread-id`.
+
 Example Generic JSON configuration (omitted settings take schema defaults):
 
 ```json

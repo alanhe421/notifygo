@@ -166,14 +166,23 @@ final class CallbackStore: ObservableObject {
         pushURL = response.pushURL
     }
 
-    func sendDirect(title: String, body: String, url: String, sound: String, level: String) async throws {
+    func sendDirect(title: String, subtitle: String, body: String, url: String, icon: String, group: String, sound: String, level: String) async throws {
         guard let pushURL, let endpoint = URL(string: pushURL) else { throw CallbackError.unavailable }
-        struct Payload: Encodable { let title: String; let body: String; let url: String; let sound: String; let level: String }
+        struct Payload: Encodable {
+            let title: String
+            let subtitle: String
+            let body: String
+            let url: String
+            let icon: String
+            let group: String
+            let sound: String
+            let level: String
+        }
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
         request.timeoutInterval = 30
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try JSONEncoder().encode(Payload(title: title, body: body, url: url, sound: sound, level: level))
+        request.httpBody = try JSONEncoder().encode(Payload(title: title, subtitle: subtitle, body: body, url: url, icon: icon, group: group, sound: sound, level: level))
         let (_, response) = try await session.data(for: request)
         guard let response = response as? HTTPURLResponse, (200...299).contains(response.statusCode) else {
             throw CallbackError.request((response as? HTTPURLResponse)?.statusCode ?? 503)

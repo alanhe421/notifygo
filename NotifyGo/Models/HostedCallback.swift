@@ -40,8 +40,11 @@ enum JSONValue: Codable, Equatable {
 
 struct CallbackTemplate: Codable, Equatable {
     var title = "{{title}}"
+    var subtitle: String?
     var body = "{{body}}"
     var url = ""
+    var icon: String?
+    var group: String?
     var sound = "default"
     var level = "active"
     var badge = "unchanged"

@@ -12,15 +12,15 @@ export function apnsPayload(push: Push) {
   const n = push.notification;
   return {
     aps: {
-      alert: { title: n.title, body: n.body },
+      alert: { title: n.title, ...(n.subtitle ? { subtitle: n.subtitle } : {}), body: n.body },
       ...(n.sound === 'none' ? {} : { sound: 'default' }),
       ...(push.badge === undefined ? {} : { badge: push.badge }),
-      'interruption-level': n.level, 'mutable-content': 1, 'thread-id': push.callbackId
+      'interruption-level': n.level, 'mutable-content': 1, 'thread-id': n.group || push.callbackId
     },
     notifygo: {
       eventId: push.eventId, callbackId: push.callbackId, url: n.url,
       name: push.callback.name, symbol: push.callback.symbol, emoji: push.callback.emoji,
-      color: push.callback.color, imageURL: push.callback.imageURL, tags: push.callback.tags
+      color: push.callback.color, imageURL: n.icon || push.callback.imageURL, tags: push.callback.tags
     }
   };
 }

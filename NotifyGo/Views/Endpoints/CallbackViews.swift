@@ -127,9 +127,9 @@ struct SettingsView: View {
                     if !store.deviceRegistered {
                         Button("Enable notifications") { Task { await store.enableNotifications() } }
                             .disabled(!store.connected)
-                    }
-                    Button("Open notification settings") {
-                        if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
+                        Button("Open notification settings") {
+                            if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
+                        }
                     }
                 }
 
@@ -266,8 +266,11 @@ struct SettingsView: View {
           --header 'Content-Type: application/json' \\
           --data '{
             "title": "Hello from NotifyGo",
+            "subtitle": "Production",
             "body": "Your notification message.",
             "url": "https://example.com",
+            "icon": "https://example.com/icon.png",
+            "group": "server-monitoring",
             "sound": "default",
             "level": "active"
           }'
@@ -295,8 +298,11 @@ struct SettingsView: View {
             do {
                 try await store.sendDirect(
                     title: "NotifyGo Test",
+                    subtitle: "",
                     body: "Your device notification is working.",
                     url: "",
+                    icon: "",
+                    group: "",
                     sound: "default",
                     level: "active"
                 )
@@ -383,8 +389,11 @@ struct DirectPushView: View {
     @EnvironmentObject private var store: CallbackStore
     @Environment(\.dismiss) private var dismiss
     @State private var title = "Hello from NotifyGo"
+    @State private var subtitle = ""
     @State private var notificationBody = "Your direct Push URL is ready."
     @State private var destinationURL = ""
+    @State private var iconURL = ""
+    @State private var group = ""
     @State private var sound = "default"
     @State private var level = "active"
     @State private var sending = false
@@ -395,9 +404,14 @@ struct DirectPushView: View {
             Form {
                 Section("Notification") {
                     TextField("Title", text: $title)
+                    TextField("Subtitle (optional)", text: $subtitle)
                     TextField("Body", text: $notificationBody, axis: .vertical).lineLimit(3...8)
                     TextField("Open URL (optional)", text: $destinationURL)
                         .keyboardType(.URL).textInputAutocapitalization(.never).autocorrectionDisabled()
+                    TextField("Icon HTTPS URL (optional)", text: $iconURL)
+                        .keyboardType(.URL).textInputAutocapitalization(.never).autocorrectionDisabled()
+                    TextField("Group (optional)", text: $group)
+                        .textInputAutocapitalization(.never).autocorrectionDisabled()
                 }
                 Section("Delivery") {
                     Picker("Sound", selection: $sound) { Text("Default").tag("default"); Text("None").tag("none") }
@@ -417,7 +431,19 @@ struct DirectPushView: View {
                         sending = true; sent = false
                         Task { @MainActor in
                             defer { sending = false }
-                            do { try await store.sendDirect(title: title, body: notificationBody, url: destinationURL, sound: sound, level: level); sent = true }
+                            do {
+                                try await store.sendDirect(
+                                    title: title,
+                                    subtitle: subtitle,
+                                    body: notificationBody,
+                                    url: destinationURL,
+                                    icon: iconURL,
+                                    group: group,
+                                    sound: sound,
+                                    level: level
+                                )
+                                sent = true
+                            }
                             catch { store.report(error) }
                         }
                     }.disabled(title.trimmingCharacters(in: .whitespaces).isEmpty)
@@ -644,8 +670,11 @@ struct CallbackRuleEditor: View {
             if rule.send {
                 Section("Notification template") {
                     TextField("Title, e.g. {{type}} · {{product}}", text: $rule.template.title)
+                    TextField("Subtitle (optional)", text: optionalText($rule.template.subtitle))
                     TextField("Body", text: $rule.template.body, axis: .vertical).lineLimit(2...6)
                     TextField("Open URL (optional)", text: $rule.template.url).textInputAutocapitalization(.never).autocorrectionDisabled()
+                    TextField("Icon HTTPS URL (optional)", text: optionalText($rule.template.icon)).textInputAutocapitalization(.never).autocorrectionDisabled()
+                    TextField("Group (optional)", text: optionalText($rule.template.group)).textInputAutocapitalization(.never).autocorrectionDisabled()
                     Picker("Sound", selection: $rule.template.sound) {
                         Text("Default").tag("default"); Text("Silent").tag("none")
                     }
@@ -664,6 +693,10 @@ struct CallbackRuleEditor: View {
             }
         }
         .navigationTitle("Edit rule")
+    }
+
+    private func optionalText(_ value: Binding<String?>) -> Binding<String> {
+        Binding(get: { value.wrappedValue ?? "" }, set: { value.wrappedValue = $0 })
     }
 }
 

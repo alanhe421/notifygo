@@ -51,7 +51,8 @@ export default {
         const value = request.method === 'GET' ? Object.fromEntries(url.searchParams) : await body(request);
         const source = value as Record<string, unknown>;
         const notification = templateSchema.parse({
-          title: source.title ?? 'NotifyGo', body: source.body ?? '', url: source.url ?? '',
+          title: source.title ?? 'NotifyGo', subtitle: source.subtitle ?? '', body: source.body ?? '',
+          url: source.url ?? '', icon: source.icon ?? '', group: source.group ?? '',
           sound: source.sound ?? 'default', level: source.level ?? 'active',
           badge: source.badge ?? 'unchanged', badgeValue: Number(source.badgeValue ?? 0)
         });
