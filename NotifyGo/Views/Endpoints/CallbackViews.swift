@@ -191,12 +191,19 @@ struct SettingsView: View {
                 } header: {
                     Text("This Device")
                 } footer: {
-                    Text("This URL sends a custom notification directly to this device. Callback URLs are managed separately.")
-                }
-
-                Section("About") {
-                    LabeledContent("App", value: "NotifyGo")
-                    LabeledContent("Version", value: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—")
+                    VStack(spacing: 16) {
+                        Text("This URL sends a custom notification directly to this device. Callback URLs are managed separately.")
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        HStack(spacing: 4) {
+                            Image(systemName: "app.badge.fill")
+                                .imageScale(.small)
+                            Text("NotifyGo \(appDisplayVersion)")
+                                .textSelection(.enabled)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                    }
                 }
             }
             .navigationTitle("Settings")
@@ -234,6 +241,12 @@ struct SettingsView: View {
                 Text(store.error ?? "")
             }
         }
+    }
+
+    private var appDisplayVersion: String {
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—"
+        let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "—"
+        return "\(version) (\(build))"
     }
 
     private func showCopyToast() {
