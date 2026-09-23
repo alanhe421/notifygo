@@ -100,7 +100,10 @@ export class InstallationLock extends DurableObject<DOEnv> {
         await this.#sender()({ deviceToken: owner.device_token, environment: owner.environment, callback, callbackId: 'direct', notification, badge, eventId: crypto.randomUUID() });
         if (badge !== undefined) await this.env.DB.prepare('UPDATE installations SET badge = ? WHERE id = ?').bind(badge, this.#ownerId).run();
         return ok({ status: 'sent' });
-      } catch { return fail(502, 'Push delivery failed; check device registration and service configuration'); }
+      } catch (error) {
+        console.error('Direct APNs delivery failed', error instanceof Error ? error.message : String(error));
+        return fail(502, 'Push delivery failed; check device registration and service configuration');
+      }
     }));
   }
   async createCallback(configJson: string): Promise<string> {
@@ -214,7 +217,8 @@ export class InstallationLock extends DurableObject<DOEnv> {
       if (badge !== undefined) await this.env.DB.prepare('UPDATE installations SET badge = ? WHERE id = ?').bind(badge, this.#ownerId).run();
       await recordReceipt();
       return ok({ ...result, id, status: 'sent' });
-    } catch {
+    } catch (error) {
+      console.error('Callback APNs delivery failed', error instanceof Error ? error.message : String(error));
       await this.env.DB.prepare('UPDATE events SET status = ? WHERE id = ?').bind('failed', id).run();
       return fail(502, 'Push delivery failed; check device registration and service configuration');
     }
