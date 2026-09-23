@@ -1,0 +1,1396 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%@ · %@ · %@%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@ · %3$@%4$@"
+          }
+        }
+      }
+    },
+    "%@ · %@%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@%3$@"
+          }
+        }
+      }
+    },
+    "%@, %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@"
+          }
+        }
+      }
+    },
+    "%@: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@: %2$@"
+          }
+        }
+      }
+    },
+    "A device key will appear after this device connects." : {
+
+    },
+    "Accent" : {
+
+    },
+    "Active" : {
+
+    },
+    "Add condition" : {
+
+    },
+    "Add field mapping" : {
+
+    },
+    "Add one" : {
+
+    },
+    "Add rule" : {
+
+    },
+    "Advanced options" : {
+
+    },
+    "Alias (for {{mapped.alias}})" : {
+
+    },
+    "All conditions must match" : {
+
+    },
+    "AND conditions. Lowest priority number wins; ties use rule ID. An empty condition list matches all payloads. Missing template fields prevent sending." : {
+
+    },
+    "Anyone with this URL can trigger this Callback. Resetting the key immediately invalidates the old URL." : {
+
+    },
+    "App Apple ID (required for production)" : {
+
+    },
+    "App Bundle ID" : {
+
+    },
+    "App Language" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリの言語"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "앱 언어"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "应用语言"
+          }
+        }
+      }
+    },
+    "App Store transactions" : {
+
+    },
+    "Badge" : {
+
+    },
+    "Badge number" : {
+
+    },
+    "Body" : {
+
+    },
+    "Boolean" : {
+
+    },
+    "Callback" : {
+
+    },
+    "Callback unavailable" : {
+
+    },
+    "Callback URL" : {
+
+    },
+    "Callbacks" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コールバック"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "콜백"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "回调"
+          }
+        }
+      }
+    },
+    "Cancel" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "キャンセル"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取消"
+          }
+        }
+      }
+    },
+    "Clear" : {
+
+    },
+    "Color" : {
+
+    },
+    "Connect to create this device's private Push URL." : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "接続すると、このデバイス専用のプッシュURLが作成されます。"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "连接后将为此设备创建专属推送 URL。"
+          }
+        }
+      }
+    },
+    "Contains" : {
+
+    },
+    "Copied" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コピー済み"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已复制"
+          }
+        }
+      }
+    },
+    "Copied to clipboard" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "クリップボードにコピーしました"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已复制到剪贴板"
+          }
+        }
+      }
+    },
+    "Copies the APNs Device Token to the clipboard" : {
+
+    },
+    "Copies this device's private Push URL" : {
+
+    },
+    "Copies this request to the clipboard" : {
+
+    },
+    "Copy cURL example" : {
+
+    },
+    "Copy Device Token" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "デバイストークンをコピー"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "复制设备令牌"
+          }
+        }
+      }
+    },
+    "Copy Push URL" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プッシュURLをコピー"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "复制推送 URL"
+          }
+        }
+      }
+    },
+    "Copy URL" : {
+
+    },
+    "Create an endpoint, configure its notification, then copy its Push URL." : {
+
+    },
+    "Create Callback" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コールバックを作成"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "创建回调"
+          }
+        }
+      }
+    },
+    "Create endpoint" : {
+
+    },
+    "Create Endpoint" : {
+
+    },
+    "cURL Example" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "cURLの例"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "cURL 示例"
+          }
+        }
+      }
+    },
+    "cURL example copied" : {
+
+    },
+    "Customize" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カスタマイズ"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自定义"
+          }
+        }
+      }
+    },
+    "Customize notification" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知をカスタマイズ"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自定义通知"
+          }
+        }
+      }
+    },
+    "Default" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "デフォルト"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "默认"
+          }
+        }
+      }
+    },
+    "Default notification" : {
+
+    },
+    "Delete" : {
+
+    },
+    "Delete %@?" : {
+
+    },
+    "Delete Callback" : {
+
+    },
+    "Delete Callback and history?" : {
+
+    },
+    "Delete Endpoint" : {
+
+    },
+    "Delivery" : {
+
+    },
+    "Device Push URL" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "デバイスのプッシュURL"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기기 푸시 URL"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "设备推送 URL"
+          }
+        }
+      }
+    },
+    "Device Security" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "デバイスのセキュリティ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기기 보안"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "设备安全"
+          }
+        }
+      }
+    },
+    "Device Token" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "デバイストークン"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기기 토큰"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "设备令牌"
+          }
+        }
+      }
+    },
+    "Device Token copied" : {
+
+    },
+    "Done" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "完了"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "完成"
+          }
+        }
+      }
+    },
+    "Edit" : {
+
+    },
+    "Edit Callback" : {
+
+    },
+    "Edit Endpoint" : {
+
+    },
+    "Edit rule" : {
+
+    },
+    "Emoji (optional)" : {
+
+    },
+    "Enable Callback" : {
+
+    },
+    "Enable notifications" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知を有効にする"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "启用通知"
+          }
+        }
+      }
+    },
+    "Enabled" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "有効"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "활성화됨"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已启用"
+          }
+        }
+      }
+    },
+    "Endpoint name" : {
+
+    },
+    "Endpoint unavailable" : {
+
+    },
+    "Environment" : {
+
+    },
+    "Equals" : {
+
+    },
+    "Field mapping" : {
+
+    },
+    "Field path" : {
+
+    },
+    "Follow System" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "システム設定に従う"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "시스템 설정 따르기"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "跟随系统"
+          }
+        }
+      }
+    },
+    "Generic JSON" : {
+
+    },
+    "Greater than" : {
+
+    },
+    "Group" : {
+
+    },
+    "Group (optional)" : {
+
+    },
+    "History" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "履歴"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기록"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "历史"
+          }
+        }
+      }
+    },
+    "History unavailable" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "履歴を利用できません"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "历史记录不可用"
+          }
+        }
+      }
+    },
+    "Home" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ホーム"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "홈"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "首页"
+          }
+        }
+      }
+    },
+    "Icon" : {
+
+    },
+    "Icon HTTPS URL (optional)" : {
+
+    },
+    "Identity" : {
+
+    },
+    "Image HTTPS URL (optional)" : {
+
+    },
+    "Interruption" : {
+
+    },
+    "iOS controls the final notification layout. NotifyGo configures content, sound, grouping, badge, and tap destination." : {
+
+    },
+    "It may have been deleted." : {
+
+    },
+    "JSON payload" : {
+
+    },
+    "Keep unchanged" : {
+
+    },
+    "Language" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "言語"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "언어"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "语言"
+          }
+        }
+      }
+    },
+    "Less than" : {
+
+    },
+    "Loading…" : {
+
+    },
+    "Missing fields: %@" : {
+
+    },
+    "Mock only — the NotifyGo service is not connected." : {
+
+    },
+    "Name" : {
+
+    },
+    "New" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新規"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新建"
+          }
+        }
+      }
+    },
+    "New Callback" : {
+
+    },
+    "New Endpoint" : {
+
+    },
+    "No Callbacks yet" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コールバックはまだありません"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂无回调"
+          }
+        }
+      }
+    },
+    "No endpoints yet" : {
+
+    },
+    "No notifications yet" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知はまだありません"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "아직 알림이 없습니다"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂无通知"
+          }
+        }
+      }
+    },
+    "None" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "なし"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无"
+          }
+        }
+      }
+    },
+    "Not enabled" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無効"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未启用"
+          }
+        }
+      }
+    },
+    "Not equal" : {
+
+    },
+    "Notification" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知"
+          }
+        }
+      }
+    },
+    "Notification level" : {
+
+    },
+    "Notification preview. %@. %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Notification preview. %1$@. %2$@"
+          }
+        }
+      }
+    },
+    "Notification sent" : {
+
+    },
+    "Notification template" : {
+
+    },
+    "Notifications" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "알림"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知"
+          }
+        }
+      }
+    },
+    "Notifications sent by your Callbacks will appear here." : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コールバックから送信された通知がここに表示されます。"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "由回调发送的通知会显示在这里。"
+          }
+        }
+      }
+    },
+    "NotifyGo" : {
+
+    },
+    "NOTIFYGO" : {
+
+    },
+    "NotifyGo %@" : {
+
+    },
+    "now" : {
+
+    },
+    "Number" : {
+
+    },
+    "OK" : {
+
+    },
+    "Open notification settings" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知設定を開く"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开通知设置"
+          }
+        }
+      }
+    },
+    "Open URL (optional)" : {
+
+    },
+    "Opens" : {
+
+    },
+    "Operator" : {
+
+    },
+    "Parsed fields" : {
+
+    },
+    "Passive" : {
+
+    },
+    "Paste the original JSON object containing signedPayload. Both event and transaction signatures are verified." : {
+
+    },
+    "Pause Callback" : {
+
+    },
+    "Payload" : {
+
+    },
+    "Payload parser" : {
+
+    },
+    "Preparing Quick Push…" : {
+
+    },
+    "Preview" : {
+
+    },
+    "Preview sample payload" : {
+
+    },
+    "Priority" : {
+
+    },
+    "Production" : {
+
+    },
+    "Push URL" : {
+
+    },
+    "Push URL copied" : {
+
+    },
+    "Push URLs are mock addresses and do not send notifications yet." : {
+
+    },
+    "Quick Push" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "クイックプッシュ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "빠른 푸시"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "快捷推送"
+          }
+        }
+      }
+    },
+    "Recent notifications" : {
+
+    },
+    "Remove condition" : {
+
+    },
+    "Remove mapping" : {
+
+    },
+    "Reset Callback key?" : {
+
+    },
+    "Reset Device Key" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "デバイスキーをリセット"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기기 키 재설정"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重置设备密钥"
+          }
+        }
+      }
+    },
+    "Reset Device Key?" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "デバイスキーをリセットしますか？"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "要重置设备密钥吗？"
+          }
+        }
+      }
+    },
+    "Reset key" : {
+
+    },
+    "Reset Key" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "キーをリセット"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重置密钥"
+          }
+        }
+      }
+    },
+    "Reset the key to obtain a new URL." : {
+
+    },
+    "Resetting the device key invalidates the current Quick Push URL immediately. Callback URLs are not affected." : {
+
+    },
+    "Result" : {
+
+    },
+    "Retry" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再試行"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다시 시도"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重试"
+          }
+        }
+      }
+    },
+    "Rule" : {
+
+    },
+    "Rule matching" : {
+
+    },
+    "Rule name" : {
+
+    },
+    "Rules" : {
+
+    },
+    "Rules run from lowest priority number to highest. The first matching rule wins. No match means no notification." : {
+
+    },
+    "Sample data is not signature verified and cannot send a push." : {
+
+    },
+    "Sandbox" : {
+
+    },
+    "Save" : {
+
+    },
+    "Saving…" : {
+
+    },
+    "Send" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "送信"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "发送"
+          }
+        }
+      }
+    },
+    "Send directly to this device" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このデバイスに直接送信"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 기기로 바로 보내기"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "直接发送到此设备"
+          }
+        }
+      }
+    },
+    "Send test notification" : {
+
+    },
+    "Send Test to This Device" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このデバイスにテスト送信"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "向此设备发送测试"
+          }
+        }
+      }
+    },
+    "Send when matched" : {
+
+    },
+    "Sending…" : {
+
+    },
+    "Service unavailable" : {
+
+    },
+    "Set number" : {
+
+    },
+    "Settings" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "설정"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "设置"
+          }
+        }
+      }
+    },
+    "SF Symbol" : {
+
+    },
+    "Share Push URL" : {
+
+    },
+    "Silent" : {
+
+    },
+    "Sound" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サウンド"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "声音"
+          }
+        }
+      }
+    },
+    "Source appearance" : {
+
+    },
+    "Source path, e.g. event.title" : {
+
+    },
+    "Status" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "状態"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "상태"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "状态"
+          }
+        }
+      }
+    },
+    "Subtitle (optional)" : {
+
+    },
+    "Tags, separated by commas" : {
+
+    },
+    "Test" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "テスト"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "测试"
+          }
+        }
+      }
+    },
+    "Test & preview" : {
+
+    },
+    "Text" : {
+
+    },
+    "The current Push URL will stop working immediately. Callback URLs are not affected." : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "現在のプッシュURLは直ちに無効になります。コールバックURLには影響しません。"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当前推送 URL 将立即失效，回调 URL 不受影响。"
+          }
+        }
+      }
+    },
+    "The Device Token will appear after notification registration completes." : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知の登録が完了するとデバイストークンが表示されます。"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知注册完成后会显示设备令牌。"
+          }
+        }
+      }
+    },
+    "The iOS notification App Icon is always NotifyGo. Source appearance is used in attachments and history; iOS controls notification backgrounds." : {
+
+    },
+    "This APNs token identifies this app installation. Treat it as diagnostic information and avoid sharing it publicly." : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このAPNsトークンは本アプリのインストールを識別します。診断情報として扱い、公開しないでください。"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此 APNs 令牌用于标识本次应用安装。请将其视为诊断信息，不要公开分享。"
+          }
+        }
+      }
+    },
+    "This endpoint and its local configuration will be removed." : {
+
+    },
+    "Time Sensitive" : {
+
+    },
+    "Title" : {
+
+    },
+    "Title, e.g. {{type}} · {{product}}" : {
+
+    },
+    "True" : {
+
+    },
+    "Try connecting again. If this continues, contact the app publisher." : {
+
+    },
+    "Turn a JSON payload or App Store event into a notification." : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "JSONペイロードやApp Storeイベントを通知に変換します。"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "将 JSON 数据或 App Store 事件转换为通知。"
+          }
+        }
+      }
+    },
+    "Unverified sample · preview only" : {
+
+    },
+    "Update app badge" : {
+
+    },
+    "Update the URL at every third-party service after resetting." : {
+
+    },
+    "Use {{field.path}} for variables. URL variable values are percent-encoded. iOS permissions and Focus settings determine presentation." : {
+
+    },
+    "Use decoded sample (preview only)" : {
+
+    },
+    "Value" : {
+
+    },
+    "Value type" : {
+
+    },
+    "Verified fields: type, subtype, product, amount, currency, country, environment. Country uses the three-letter storefront code. Amount is in currency units, not milliunits." : {
+
+    }
+  },
+  "version" : "1.0"
+}

@@ -24,6 +24,7 @@
 		A10000000000000000000017 /* PushDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000017 /* PushDelegate.swift */; };
 		A10000000000000000000018 /* CallbackViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000018 /* CallbackViews.swift */; };
 		A10000000000000000000019 /* HostedCallbackTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000019 /* HostedCallbackTests.swift */; };
+		A10000000000000000000020 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000020 /* Localizable.xcstrings */; };
 		A20000000000000000000001 /* NotifyGoNotificationService/NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000001 /* NotifyGoNotificationService/NotificationService.swift */; };
 		A20000000000000000000002 /* NotifyGoNotificationService.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = B20000000000000000000002 /* NotifyGoNotificationService.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
@@ -79,6 +80,7 @@
 		B10000000000000000000017 /* PushDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushDelegate.swift; sourceTree = "<group>"; };
 		B10000000000000000000018 /* CallbackViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallbackViews.swift; sourceTree = "<group>"; };
 		B10000000000000000000019 /* HostedCallbackTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostedCallbackTests.swift; sourceTree = "<group>"; };
+		B10000000000000000000020 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		B20000000000000000000001 /* NotifyGoNotificationService/NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotifyGoNotificationService/NotificationService.swift; sourceTree = SOURCE_ROOT; };
 		B20000000000000000000002 /* NotifyGoNotificationService.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; path = NotifyGoNotificationService.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -162,6 +164,7 @@
 		G10000000000000000000007 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				B10000000000000000000020 /* Localizable.xcstrings */,
 				B10000000000000000000009 /* Assets.xcassets */,
 			);
 			path = Resources;
@@ -288,6 +291,9 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				ja,
+				ko,
+				"zh-Hans",
 				Base,
 			);
 			mainGroup = G10000000000000000000001;
@@ -307,6 +313,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A10000000000000000000020 /* Localizable.xcstrings in Resources */,
 				A10000000000000000000009 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

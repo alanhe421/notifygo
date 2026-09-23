@@ -336,12 +336,22 @@ struct SettingsView: View {
     @State private var confirmsDeviceKeyReset = false
     @State private var copiedDeviceToken = false
     @State private var toastMessage: String?
+    @AppStorage("appLanguage") private var appLanguage = AppLanguage.system.rawValue
 
     var body: some View {
         NavigationStack {
             List {
+                Section("Language") {
+                    Picker("App Language", selection: $appLanguage) {
+                        ForEach(AppLanguage.allCases) { language in
+                            Text(language.displayName).tag(language.rawValue)
+                        }
+                    }
+                    .pickerStyle(.navigationLink)
+                }
+
                 Section("Notifications") {
-                    LabeledContent("Status", value: store.deviceRegistered ? "Enabled" : "Not enabled")
+                    LabeledContent("Status", value: String(localized: store.deviceRegistered ? "Enabled" : "Not enabled"))
                     if !store.deviceRegistered {
                         Button("Enable notifications") { Task { await store.enableNotifications() } }
                             .disabled(!store.connected)
@@ -447,7 +457,7 @@ struct SettingsView: View {
 
     private func showCopyToast() {
         withAnimation(.easeOut(duration: 0.2)) {
-            toastMessage = "Copied to clipboard"
+            toastMessage = String(localized: "Copied to clipboard")
         }
         Task { @MainActor in
             try? await Task.sleep(for: .seconds(1.5))
