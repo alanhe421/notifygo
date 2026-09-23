@@ -5,6 +5,9 @@ export type Push = {
   deviceToken: string; environment: string; callback: Callback; callbackId: string;
   notification: NotificationTemplate; badge?: number; eventId: string;
 };
+
+let providerTokenCache: { key: string; jwt: string; issuedAt: number } | undefined;
+
 export function apnsPayload(push: Push) {
   const n = push.notification;
   return {
@@ -22,15 +25,15 @@ export function apnsPayload(push: Push) {
   };
 }
 export function createAPNsSender(config: { teamId: string; keyId: string; privateKey: string; topic: string }) {
-  let jwt = '', issuedAt = 0;
   return async (push: Push) => {
     const now = Math.floor(Date.now() / 1000);
-    if (now - issuedAt > 3000) {
+    const cacheKey = `${config.teamId}:${config.keyId}`;
+    if (!providerTokenCache || providerTokenCache.key !== cacheKey || now - providerTokenCache.issuedAt > 3000) {
       const header = Buffer.from(JSON.stringify({ alg: 'ES256', kid: config.keyId })).toString('base64url');
       const claims = Buffer.from(JSON.stringify({ iss: config.teamId, iat: now })).toString('base64url');
       const input = `${header}.${claims}`;
-      jwt = `${input}.${sign('sha256', Buffer.from(input), { key: config.privateKey, dsaEncoding: 'ieee-p1363' }).toString('base64url')}`;
-      issuedAt = now;
+      const jwt = `${input}.${sign('sha256', Buffer.from(input), { key: config.privateKey, dsaEncoding: 'ieee-p1363' }).toString('base64url')}`;
+      providerTokenCache = { key: cacheKey, jwt, issuedAt: now };
     }
     const payload = JSON.stringify(apnsPayload(push));
     if (Buffer.byteLength(payload) > 4096) throw new Error('Notification exceeds APNs payload limit');
@@ -40,7 +43,7 @@ export function createAPNsSender(config: { teamId: string; keyId: string; privat
     const response = await fetch(`${origin}/3/device/${push.deviceToken}`, {
       method: 'POST',
       headers: {
-        authorization: `bearer ${jwt}`,
+        authorization: `bearer ${providerTokenCache.jwt}`,
         'apns-topic': config.topic,
         'apns-push-type': 'alert',
         'apns-priority': push.notification.level === 'passive' ? '5' : '10',
