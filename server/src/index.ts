@@ -6,6 +6,8 @@ import type { Env } from './env.ts';
 
 export { InstallationLock } from './installation-lock.ts';
 
+const TRANSFER_TTL = 10 * 60_000;
+const isLookup = (value: unknown): value is string => typeof value === 'string' && /^[a-f0-9]{64}$/.test(value);
 const json = (body: unknown, status = 200) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store' } });
 
 async function body(request: Request): Promise<unknown> {
@@ -65,12 +67,55 @@ export default {
         const payload = request.method === 'GET' ? Object.fromEntries(url.searchParams) : await body(request);
         return rpc(env.LOCKS.getByName(row.owner).deliverPublic(row.id, decodeURIComponent(publicMatch[2]), JSON.stringify(payload), request.headers.get('Idempotency-Key') ?? undefined));
       }
+      if (request.method === 'POST' && url.pathname === '/v1/transfers/redeem') {
+        if (!(await env.RATE_SIGNUP.limit({ key: ip })).success) return json({ error: 'Too many requests; retry in a minute' }, 429);
+        const value = await body(request) as { lookup?: unknown };
+        if (!isLookup(value.lookup)) return json({ error: 'Invalid request or callback configuration' }, 400);
+        // The redeeming device usually already has its own empty installation; it is replaced, never merged.
+        const authorization = request.headers.get('Authorization');
+        const caller = authorization?.startsWith('Bearer ') ? await findOwnerByAuth(env.DB, authorization.slice(7)) : null;
+        const lookupHash = await hash(value.lookup);
+        const transfer = await env.DB.prepare('SELECT owner FROM transfers WHERE lookup_hash = ? AND expires_at >= ?').bind(lookupHash, new Date().toISOString()).first<{ owner: string }>();
+        if (!transfer) return json({ error: 'Migration code is invalid or expired' }, 404);
+        if (transfer.owner === caller?.id) return json({ error: 'This migration code was created on this device' }, 409);
+        if (caller && await env.DB.prepare('SELECT 1 FROM callbacks WHERE owner = ? LIMIT 1').bind(caller.id).first())
+          return json({ error: 'This device already has Callbacks' }, 409);
+        // Single use: only the request whose DELETE returns the row may complete the migration.
+        const claimed = await env.DB.prepare('DELETE FROM transfers WHERE lookup_hash = ? RETURNING owner, payload').bind(lookupHash).first<{ owner: string; payload: string }>();
+        if (!claimed) return json({ error: 'Migration code is invalid or expired' }, 404);
+        const authToken = token();
+        const result = JSON.parse(await env.LOCKS.getByName(claimed.owner).transferOwnership(await hash(authToken))) as { status: number; body: unknown };
+        if (result.status !== 200) return json(result.body, result.status);
+        if (caller) await env.DB.prepare('DELETE FROM installations WHERE id = ? AND NOT EXISTS (SELECT 1 FROM callbacks WHERE owner = ?)').bind(caller.id, caller.id).run();
+        return json({ id: claimed.owner, token: authToken, payload: claimed.payload });
+      }
       const current = await owner(request, env), lock = env.LOCKS.getByName(current.id);
       if (request.method === 'PUT' && url.pathname === '/v1/device') {
         const value = await body(request) as { token?: unknown; environment?: unknown };
         if (typeof value.token !== 'string' || !/^[a-f0-9]{64,200}$/.test(value.token) || !['development', 'production'].includes(String(value.environment)))
           return json({ error: 'Invalid request or callback configuration' }, 400);
-        return rpc(lock.setDevice(value.token, String(value.environment)));
+        return rpc(lock.setDevice(value.token, String(value.environment), current.auth_hash));
+      }
+      if (url.pathname === '/v1/transfers') {
+        if (request.method === 'POST') {
+          const value = await body(request) as { lookup?: unknown; payload?: unknown };
+          if (!isLookup(value.lookup) || typeof value.payload !== 'string' || !/^[A-Za-z0-9+/=_-]{1,16384}$/.test(value.payload))
+            return json({ error: 'Invalid request or callback configuration' }, 400);
+          const now = new Date(), expiresAt = new Date(now.getTime() + TRANSFER_TTL).toISOString();
+          await env.DB.batch([
+            env.DB.prepare('DELETE FROM transfers WHERE owner = ? OR expires_at < ?').bind(current.id, now.toISOString()),
+            env.DB.prepare('INSERT INTO transfers VALUES (?, ?, ?, ?)').bind(await hash(value.lookup), current.id, value.payload, expiresAt)
+          ]);
+          return json({ expiresAt }, 201);
+        }
+        if (request.method === 'GET') {
+          const pending = await env.DB.prepare('SELECT expires_at FROM transfers WHERE owner = ? AND expires_at >= ?').bind(current.id, new Date().toISOString()).first<{ expires_at: string }>();
+          return json(pending ? { pending: true, expiresAt: pending.expires_at } : { pending: false });
+        }
+        if (request.method === 'DELETE') {
+          await env.DB.prepare('DELETE FROM transfers WHERE owner = ?').bind(current.id).run();
+          return json({ ok: true });
+        }
       }
       if (request.method === 'POST' && url.pathname === '/v1/device/rotate') {
         await body(request);

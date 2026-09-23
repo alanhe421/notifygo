@@ -8,6 +8,7 @@
   "scripts": {
     "start": "node --experimental-strip-types src/main.ts",
     "test": "node --experimental-strip-types --test --test-concurrency=1 test/*.test.ts",
+    "test:worker": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

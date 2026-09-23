@@ -28,6 +28,9 @@ Management endpoints use `Authorization: Bearer <installation token>`, except re
 | `PUT /v1/device` | `{token, environment: "development" or "production"}` |
 | `POST /v1/device/rotate` | Rotate and return this installation's Device Push URL |
 | `GET/POST /push/:deviceKey` | Send a custom notification directly to the registered device |
+| `POST /v1/transfers` | `{lookup, payload}`; starts a 10-minute device migration, replacing any pending one |
+| `GET /v1/transfers` / `DELETE /v1/transfers` | Pending migration status / cancel |
+| `POST /v1/transfers/redeem` | `{lookup}`; moves the installation to the caller and returns a new token plus the encrypted payload |
 | `GET /v1/callbacks` | Installation's configurations; never secrets |
 | `POST /v1/callbacks` | Create, returning configuration, ID and one-time `callbackURL` |
 | `PUT /v1/callbacks/:id` | Replace validated configuration, including enabled state |
@@ -38,6 +41,8 @@ Management endpoints use `Authorization: Bearer <installation token>`, except re
 | `GET /v1/callbacks/:id/history` | Most recent 50 results, at most 30 days |
 | `GET /c/:id/:secret` | Query string fields become a JSON object of strings |
 | `POST /c/:id/:secret` | JSON object; optional `Idempotency-Key` for generic senders |
+
+Device migration keeps the installation ID, so Callback URLs, the Device Push URL, rules and history are unchanged. The app derives both `lookup` and an AES-GCM key from the one-time migration code; `payload` holds the Callback and Push URL secrets encrypted with that key, so the service stores only ciphertext. Redeeming is single use, rotates the installation token, clears the old device's APNs registration and removes the redeeming device's own installation if it has no Callbacks (it is refused otherwise).
 
 POST is required for numeric/boolean/nested fields. GET query values remain strings and are not coerced. Responses are marked `no-store`. Callback responses expose only processing status; detailed business fields and rule traces require installation authentication.
 

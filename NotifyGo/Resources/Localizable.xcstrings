@@ -41,6 +41,9 @@
         }
       }
     },
+    "%lld" : {
+
+    },
     "A device key will appear after this device connects." : {
 
     },
@@ -51,6 +54,9 @@
 
     },
     "Add condition" : {
+
+    },
+    "Add custom template" : {
 
     },
     "Add field mapping" : {
@@ -71,16 +77,35 @@
     "All conditions must match" : {
 
     },
+    "All templates are ready to use. Customization is optional." : {
+
+    },
+    "Allow camera access for NotifyGo in Settings, or paste the code instead." : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定で NotifyGo のカメラへのアクセスを許可するか、コードを貼り付けてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "설정에서 NotifyGo의 카메라 접근을 허용하거나 코드를 붙여 넣으세요."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请在系统设置中允许 NotifyGo 使用相机，或直接粘贴迁移码。"
+          }
+        }
+      }
+    },
     "AND conditions. Lowest priority number wins; ties use rule ID. An empty condition list matches all payloads. Missing template fields prevent sending." : {
 
     },
     "Anyone with this URL can trigger this Callback. Resetting the key immediately invalidates the old URL." : {
-
-    },
-    "App Apple ID (required for production)" : {
-
-    },
-    "App Bundle ID" : {
 
     },
     "App Language" : {
@@ -105,7 +130,50 @@
         }
       }
     },
+    "App Store" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store"
+          }
+        }
+      }
+    },
+    "App Store Connect" : {
+
+    },
+    "App Store notifications" : {
+
+    },
+    "App Store Templates" : {
+
+    },
     "App Store transactions" : {
+
+    },
+    "Apple signature verification" : {
+
+    },
+    "Apple transactions are verified, parsed, and formatted automatically. Use Edit only if you want to customize the built-in notification templates." : {
+
+    },
+    "Automatic app and environment detection" : {
+
+    },
+    "Automatic processing" : {
 
     },
     "Badge" : {
@@ -121,6 +189,12 @@
 
     },
     "Callback" : {
+
+    },
+    "Callback created" : {
+
+    },
+    "Callback Ready" : {
 
     },
     "Callback unavailable" : {
@@ -151,6 +225,50 @@
         }
       }
     },
+    "Callbacks, templates, history and the Push URL move here, and the old device is disconnected immediately. URLs saved in App Store Connect and other services keep working." : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Callback、テンプレート、履歴、Push URL がこのデバイスに移り、以前のデバイスの接続はすぐに解除されます。App Store Connect などに保存した URL はそのまま使えます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Callback, 템플릿, 기록 및 Push URL이 이 기기로 옮겨지고 이전 기기는 즉시 연결 해제됩니다. App Store Connect 등에 저장된 URL은 계속 작동합니다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Callback、模板、历史记录和 Push URL 将转移到本设备，旧设备会立即断开。App Store Connect 及其他服务中保存的 URL 继续有效。"
+          }
+        }
+      }
+    },
+    "Camera unavailable" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カメラを使用できません"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "카메라를 사용할 수 없음"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "相机不可用"
+          }
+        }
+      }
+    },
     "Cancel" : {
       "localizations" : {
         "ja" : {
@@ -167,8 +285,52 @@
         }
       }
     },
+    "Choose a template" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "テンプレートを選択"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "템플릿 선택"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择模板"
+          }
+        }
+      }
+    },
     "Clear" : {
 
+    },
+    "Code expired" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コードの有効期限が切れました"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "코드가 만료됨"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "迁移码已过期"
+          }
+        }
+      }
     },
     "Color" : {
 
@@ -233,6 +395,9 @@
     "Copies this request to the clipboard" : {
 
     },
+    "Copy Callback URL" : {
+
+    },
     "Copy cURL example" : {
 
     },
@@ -248,6 +413,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "复制设备令牌"
+          }
+        }
+      }
+    },
+    "Copy migration code" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移行コードをコピー"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이전 코드 복사"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "复制迁移码"
           }
         }
       }
@@ -268,8 +455,33 @@
         }
       }
     },
+    "Copy this URL into App Store Connect to start receiving transaction notifications." : {
+
+    },
     "Copy URL" : {
 
+    },
+    "Create a new code to continue." : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "続けるには新しいコードを作成してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "계속하려면 새 코드를 만드세요."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请生成新的迁移码后继续。"
+          }
+        }
+      }
     },
     "Create an endpoint, configure its notification, then copy its Push URL." : {
 
@@ -295,6 +507,53 @@
     },
     "Create Endpoint" : {
 
+    },
+    "Create new code" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新しいコードを作成"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "새 코드 만들기"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "生成新迁移码"
+          }
+        }
+      }
+    },
+    "Create the Callback, then copy its URL into App Store Connect. NotifyGo will turn every verified transaction event into a readable notification." : {
+
+    },
+    "Creates a Callback from this template" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このテンプレートからコールバックを作成します"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 템플릿으로 콜백을 만듭니다"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用此模板创建回调"
+          }
+        }
+      }
     },
     "cURL Example" : {
       "localizations" : {
@@ -348,6 +607,9 @@
         }
       }
     },
+    "Customize templates" : {
+
+    },
     "Default" : {
       "localizations" : {
         "ja" : {
@@ -384,6 +646,28 @@
     },
     "Delivery" : {
 
+    },
+    "Device Migration" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "デバイスの移行"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기기 이전"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "设备迁移"
+          }
+        }
+      }
     },
     "Device Push URL" : {
       "localizations" : {
@@ -532,11 +816,33 @@
     "Endpoint unavailable" : {
 
     },
-    "Environment" : {
-
-    },
     "Equals" : {
 
+    },
+    "Event templates" : {
+
+    },
+    "Expires %@. Anyone with this code can take over your Callbacks, so only use it on your own device." : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@に期限切れになります。このコードを持つ人は誰でも Callback を引き継げるため、自分のデバイスでのみ使用してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 만료됩니다. 이 코드를 가진 사람은 누구나 Callback을 가져갈 수 있으므로 본인 기기에서만 사용하세요."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@后过期。任何拿到此迁移码的人都能接管你的 Callback，请只在自己的设备上使用。"
+          }
+        }
+      }
     },
     "Field mapping" : {
 
@@ -569,6 +875,28 @@
     "Generic JSON" : {
 
     },
+    "Generic Webhook" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "汎用 Webhook"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "일반 Webhook"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通用 Webhook"
+          }
+        }
+      }
+    },
     "Greater than" : {
 
     },
@@ -576,6 +904,9 @@
 
     },
     "Group (optional)" : {
+
+    },
+    "Hide Push URL" : {
 
     },
     "History" : {
@@ -650,6 +981,9 @@
     "Image HTTPS URL (optional)" : {
 
     },
+    "Included App Store events" : {
+
+    },
     "Interruption" : {
 
     },
@@ -693,11 +1027,231 @@
     "Loading…" : {
 
     },
+    "Migrate" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移行"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이전"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "迁移"
+          }
+        }
+      }
+    },
+    "Migrate from Another Device" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "別のデバイスから移行"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다른 기기에서 이전"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "从其他设备迁移"
+          }
+        }
+      }
+    },
+    "Migrate to This Device" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このデバイスへ移行"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 기기로 이전"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "迁移到本设备"
+          }
+        }
+      }
+    },
+    "Migrate to this device?" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このデバイスへ移行しますか？"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 기기로 이전할까요?"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "迁移到本设备？"
+          }
+        }
+      }
+    },
+    "Migration code" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移行コード"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이전 코드"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "迁移码"
+          }
+        }
+      }
+    },
+    "Migration code copied" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移行コードをコピーしました"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이전 코드가 복사됨"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "迁移码已复制"
+          }
+        }
+      }
+    },
+    "Migration complete" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移行が完了しました"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이전 완료"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "迁移完成"
+          }
+        }
+      }
+    },
+    "Migration QR code" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移行用 QR コード"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이전용 QR 코드"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "迁移二维码"
+          }
+        }
+      }
+    },
     "Missing fields: %@" : {
 
     },
     "Mock only — the NotifyGo service is not connected." : {
 
+    },
+    "Move to a New Device" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新しいデバイスへ移行"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "새 기기로 이전"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "迁移到新设备"
+          }
+        }
+      }
+    },
+    "Moves your Callbacks, templates, history and Push URL to another device. URLs in App Store Connect and other services stay the same." : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Callback、テンプレート、履歴、Push URL を別のデバイスへ移行します。App Store Connect などに設定した URL は変わりません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Callback, 템플릿, 기록 및 Push URL을 다른 기기로 옮깁니다. App Store Connect 등 다른 서비스의 URL은 그대로 유지됩니다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "将 Callback、模板、历史记录和 Push URL 转移到另一台设备。App Store Connect 及其他服务中的 URL 无需修改。"
+          }
+        }
+      }
     },
     "Name" : {
 
@@ -723,6 +1277,9 @@
     },
     "New Endpoint" : {
 
+    },
+    "NGM1-…" : {
+      "shouldTranslate" : false
     },
     "No Callbacks yet" : {
       "localizations" : {
@@ -836,6 +1393,9 @@
     "Notification template" : {
 
     },
+    "Notification templates" : {
+
+    },
     "Notifications" : {
       "localizations" : {
         "ja" : {
@@ -883,6 +1443,9 @@
     "NotifyGo %@" : {
 
     },
+    "NotifyGo chooses the first enabled template whose event conditions match. Changes apply only to this Callback." : {
+
+    },
     "now" : {
 
     },
@@ -890,6 +1453,53 @@
 
     },
     "OK" : {
+
+    },
+    "On the new device, open NotifyGo → Settings → Migrate from Another Device, then scan this code." : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新しいデバイスで NotifyGo → 設定 → 別のデバイスから移行 を開き、このコードをスキャンしてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "새 기기에서 NotifyGo → 설정 → 다른 기기에서 이전을 열고 이 코드를 스캔하세요."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在新设备上打开 NotifyGo → 设置 → 从其他设备迁移，然后扫描此二维码。"
+          }
+        }
+      }
+    },
+    "On your old device, open NotifyGo → Settings → Move to a New Device." : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "以前のデバイスで NotifyGo → 設定 → 新しいデバイスへ移行 を開いてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이전 기기에서 NotifyGo → 설정 → 새 기기로 이전을 여세요."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在旧设备上打开 NotifyGo → 设置 → 迁移到新设备。"
+          }
+        }
+      }
+    },
+    "Open App Store Server Notifications" : {
 
     },
     "Open notification settings" : {
@@ -911,6 +1521,9 @@
     "Open URL (optional)" : {
 
     },
+    "Open your app in App Store Connect" : {
+
+    },
     "Opens" : {
 
     },
@@ -924,6 +1537,9 @@
 
     },
     "Paste the original JSON object containing signedPayload. Both event and transaction signatures are verified." : {
+
+    },
+    "Paste the URL and select Version 2" : {
 
     },
     "Pause Callback" : {
@@ -945,9 +1561,6 @@
 
     },
     "Priority" : {
-
-    },
-    "Production" : {
 
     },
     "Push URL" : {
@@ -1099,14 +1712,33 @@
     "Sample data is not signature verified and cannot send a push." : {
 
     },
-    "Sandbox" : {
-
-    },
     "Save" : {
 
     },
     "Saving…" : {
 
+    },
+    "Scan QR Code" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "QR コードをスキャン"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "QR 코드 스캔"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "扫描二维码"
+          }
+        }
+      }
     },
     "Send" : {
       "localizations" : {
@@ -1145,6 +1777,9 @@
           }
         }
       }
+    },
+    "Send JSON POST requests to this URL to trigger notifications." : {
+
     },
     "Send test notification" : {
 
@@ -1206,6 +1841,9 @@
     "Share Push URL" : {
 
     },
+    "Show Push URL" : {
+
+    },
     "Silent" : {
 
     },
@@ -1230,6 +1868,28 @@
     },
     "Source path, e.g. event.title" : {
 
+    },
+    "Start with the payload and notification rules that fit your source." : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "送信元に適したペイロードと通知ルールから始めます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "소스에 맞는 페이로드와 알림 규칙으로 시작하세요."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "从适合该来源的请求数据和通知规则开始。"
+          }
+        }
+      }
     },
     "Status" : {
       "localizations" : {
@@ -1333,6 +1993,28 @@
         }
       }
     },
+    "This device already has Callbacks. Delete them before migrating, or migrate to a device without Callbacks." : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このデバイスには既に Callback があります。移行前に削除するか、Callback のないデバイスへ移行してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 기기에 이미 Callback이 있습니다. 이전하기 전에 삭제하거나 Callback이 없는 기기로 이전하세요."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本设备已有 Callback。请先删除，或迁移到没有 Callback 的设备。"
+          }
+        }
+      }
+    },
     "This endpoint and its local configuration will be removed." : {
 
     },
@@ -1367,6 +2049,28 @@
         }
       }
     },
+    "Turn any JSON POST request into a notification with field mappings and rules." : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フィールドマッピングとルールを使って、任意のJSON POSTリクエストを通知に変換します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "필드 매핑과 규칙을 사용해 모든 JSON POST 요청을 알림으로 변환합니다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通过字段映射和规则，将任意 JSON POST 请求转换成通知。"
+          }
+        }
+      }
+    },
     "Unverified sample · preview only" : {
 
     },
@@ -1388,8 +2092,71 @@
     "Value type" : {
 
     },
-    "Verified fields: type, subtype, product, amount, currency, country, environment. Country uses the three-letter storefront code. Amount is in currency units, not milliunits." : {
-
+    "Verify App Store Server Notifications and start with transaction-ready fields and rules." : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store Server Notificationsを検証し、取引用のフィールドとルールから始めます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store 서버 알림을 검증하고 거래용 필드와 규칙으로 시작합니다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "验证 App Store 服务器通知，并使用预置的交易字段和规则。"
+          }
+        }
+      }
+    },
+    "Your Callbacks, templates, history and Push URL are now on this device. Existing URLs keep working." : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Callback、テンプレート、履歴、Push URL はこのデバイスに移りました。既存の URL はそのまま使えます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Callback, 템플릿, 기록 및 Push URL이 이 기기로 옮겨졌습니다. 기존 URL은 계속 작동합니다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Callback、模板、历史记录和 Push URL 已转移到本设备，现有 URL 继续有效。"
+          }
+        }
+      }
+    },
+    "Your Callbacks, templates, history and Push URL now belong to the new device. This device has been disconnected." : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Callback、テンプレート、履歴、Push URL は新しいデバイスに移りました。このデバイスの接続は解除されました。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Callback, 템플릿, 기록 및 Push URL이 새 기기로 옮겨졌습니다. 이 기기는 연결이 해제되었습니다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Callback、模板、历史记录和 Push URL 已归属新设备，本设备已断开连接。"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

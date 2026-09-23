@@ -1,4 +1,5 @@
 import XCTest
+import CryptoKit
 @testable import NotifyGo
 
 final class HostedCallbackTests: XCTestCase {
@@ -36,5 +37,23 @@ final class HostedCallbackTests: XCTestCase {
         XCTAssertNil(fields["signedPayload"])
         XCTAssertEqual(fields["amount"], .number(9.99))
         XCTAssertEqual(fields["country"], .string("USA"))
+    }
+}
+
+final class MigrationCodeTests: XCTestCase {
+    func testCodeRoundTripsAndDerivesStableValues() throws {
+        let code = MigrationCode()
+        let parsed = try XCTUnwrap(MigrationCode("  \(code.text)\n"))
+        XCTAssertTrue(code.text.hasPrefix(MigrationCode.prefix))
+        XCTAssertEqual(parsed.lookup, code.lookup)
+        XCTAssertEqual(parsed.lookup.count, 64)
+        let sealed = try XCTUnwrap(AES.GCM.seal(Data("secret".utf8), using: code.key).combined)
+        XCTAssertEqual(try AES.GCM.open(AES.GCM.SealedBox(combined: sealed), using: parsed.key), Data("secret".utf8))
+    }
+
+    func testInvalidCodesAreRejected() {
+        XCTAssertNil(MigrationCode(""))
+        XCTAssertNil(MigrationCode("NGM1-short"))
+        XCTAssertNil(MigrationCode(String(MigrationCode().text.dropFirst(5))))
     }
 }

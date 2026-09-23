@@ -61,7 +61,7 @@ struct CallbackHomeView: View {
             .navigationTitle("NotifyGo")
             .refreshable { await store.refresh() }
             .navigationDestination(for: String.self) { CallbackDetailView(id: $0) }
-            .sheet(isPresented: $creating) { CallbackEditorView(callback: HostedCallback()) }
+            .sheet(isPresented: $creating) { CallbackCreationFlow() }
             .sheet(isPresented: $customizing) { DirectPushView() }
             .sheet(isPresented: $showingCurlExample) {
                 if let pushURL = store.pushURL {
@@ -132,6 +132,268 @@ struct CallbackHomeView: View {
     }
 }
 
+private enum CallbackStarterTemplate: String, Identifiable {
+    case generic
+    case appStore
+
+    var id: String { rawValue }
+
+    var callback: HostedCallback {
+        switch self {
+        case .generic:
+            var callback = HostedCallback()
+            callback.name = "Generic Webhook"
+            callback.symbol = "curlybraces"
+            callback.color = "purple"
+            return callback
+        case .appStore:
+            var callback = HostedCallback()
+            callback.name = "App Store"
+            callback.parser = "apple"
+            callback.symbol = "apple.logo"
+            callback.color = "orange"
+
+            callback.rules = appStoreNotificationRules()
+            return callback
+        }
+    }
+}
+
+private func appStoreNotificationRules() -> [CallbackRule] {
+    let templates: [(type: String, title: String, body: String)] = [
+        ("TEST", "App Store test received", "Server notifications are connected · {{environment}}"),
+        ("SUBSCRIBED", "New subscription", "{{product}} · {{environment}}"),
+        ("DID_RENEW", "Subscription renewed", "{{product}} · {{environment}}"),
+        ("DID_FAIL_TO_RENEW", "Subscription renewal failed", "{{product}} · {{environment}}"),
+        ("EXPIRED", "Subscription expired", "{{product}} · {{environment}}"),
+        ("DID_CHANGE_RENEWAL_STATUS", "Auto-renewal status changed", "{{product}} · {{environment}}"),
+        ("DID_CHANGE_RENEWAL_PREF", "Subscription plan changed", "{{product}} · {{environment}}"),
+        ("GRACE_PERIOD_EXPIRED", "Billing grace period expired", "{{product}} · {{environment}}"),
+        ("OFFER_REDEEMED", "Subscription offer redeemed", "{{product}} · {{environment}}"),
+        ("ONE_TIME_CHARGE", "One-time purchase", "{{product}} · {{environment}}"),
+        ("PRICE_INCREASE", "Subscription price update", "{{product}} · {{environment}}"),
+        ("REFUND", "Purchase refunded", "{{product}} · {{environment}}"),
+        ("REFUND_DECLINED", "Refund declined", "{{product}} · {{environment}}"),
+        ("REFUND_REVERSED", "Refund reversed", "{{product}} · {{environment}}"),
+        ("CONSUMPTION_REQUEST", "Consumption information requested", "{{product}} · {{environment}}"),
+        ("RENEWAL_EXTENDED", "Subscription renewal extended", "{{product}} · {{environment}}"),
+        ("RENEWAL_EXTENSION", "Renewal extension update", "{{type}} · {{environment}}"),
+        ("REVOKE", "Family Sharing access revoked", "{{product}} · {{environment}}"),
+        ("RESCIND_CONSENT", "App consent withdrawn", "{{type}} · {{environment}}"),
+        ("EXTERNAL_PURCHASE_TOKEN", "External purchase token update", "{{type}} · {{environment}}")
+    ]
+
+    var rules = templates.enumerated().map { index, item in
+        var rule = CallbackRule(name: item.type, priority: (index + 1) * 100)
+        rule.conditions = [CallbackCondition(field: "type", op: "eq", value: .string(item.type))]
+        rule.template.title = item.title
+        rule.template.body = item.body
+        return rule
+    }
+
+    var fallback = CallbackRule(name: "Other App Store event", priority: 9_999)
+    fallback.template.title = "App Store event · {{type}}"
+    fallback.template.body = "Environment: {{environment}}"
+    rules.append(fallback)
+    return rules
+}
+
+private struct CallbackCreationFlow: View {
+    @Environment(\.dismiss) private var dismiss
+    @State private var selectedTemplate: CallbackStarterTemplate?
+    @State private var createdCallback: HostedCallback?
+
+    var body: some View {
+        NavigationStack {
+            Group {
+                if let createdCallback {
+                    CallbackCreatedView(callback: createdCallback) { dismiss() }
+                } else {
+                    CallbackTemplatePicker { selectedTemplate = $0 }
+                }
+            }
+            .navigationDestination(item: $selectedTemplate) { template in
+                CallbackEditorView(
+                    callback: template.callback,
+                    embeddedInNavigationStack: true,
+                    onSaved: { callback in
+                        selectedTemplate = nil
+                        createdCallback = callback
+                    }
+                )
+            }
+            .navigationTitle(createdCallback == nil ? "New Callback" : "Callback Ready")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                if createdCallback == nil {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Cancel") { dismiss() }
+                    }
+                }
+            }
+        }
+    }
+}
+
+private struct CallbackCreatedView: View {
+    let callback: HostedCallback
+    let done: () -> Void
+    @State private var copied = false
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 24) {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 64))
+                    .foregroundStyle(.green)
+                    .accessibilityHidden(true)
+
+                VStack(spacing: 8) {
+                    Text("Callback created")
+                        .font(.title2.bold())
+                    Text(callback.parser == "apple"
+                         ? "Copy this URL into App Store Connect to start receiving transaction notifications."
+                         : "Send JSON POST requests to this URL to trigger notifications.")
+                        .multilineTextAlignment(.center)
+                        .foregroundStyle(.secondary)
+                }
+
+                if let url = callback.callbackURL {
+                    Button {
+                        UIPasteboard.general.setItems(
+                            [[UIPasteboard.typeAutomatic: url]],
+                            options: [.localOnly: true, .expirationDate: Date().addingTimeInterval(120)]
+                        )
+                        copied = true
+                    } label: {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Label(copied ? "Copied" : "Copy Callback URL", systemImage: copied ? "checkmark" : "doc.on.doc")
+                                .font(.headline)
+                            Text(url)
+                                .font(.footnote.monospaced())
+                                .multilineTextAlignment(.leading)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .foregroundStyle(.primary)
+                        .padding(18)
+                        .background(.background, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                    .sensoryFeedback(.success, trigger: copied)
+                }
+
+                if callback.parser == "apple" {
+                    VStack(alignment: .leading, spacing: 14) {
+                        Label("App Store Connect", systemImage: "apple.logo")
+                            .font(.headline)
+                        setupStep(1, "Open your app in App Store Connect")
+                        setupStep(2, "Open App Store Server Notifications")
+                        setupStep(3, "Paste the URL and select Version 2")
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(18)
+                    .background(.background, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                }
+
+                Button("Done", action: done)
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .frame(maxWidth: .infinity)
+            }
+            .padding(20)
+        }
+        .background(Color(uiColor: .systemGroupedBackground))
+    }
+
+    private func setupStep(_ number: Int, _ text: LocalizedStringKey) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            Text("\(number)")
+                .font(.caption.bold())
+                .foregroundStyle(.white)
+                .frame(width: 24, height: 24)
+                .background(.blue, in: Circle())
+            Text(text)
+        }
+    }
+}
+
+private struct CallbackTemplatePicker: View {
+    let select: (CallbackStarterTemplate) -> Void
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Choose a template")
+                        .font(.title2.bold())
+                    Text("Start with the payload and notification rules that fit your source.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+
+                CallbackTemplateCard(
+                    title: "Generic Webhook",
+                    description: "Turn any JSON POST request into a notification with field mappings and rules.",
+                    symbol: "curlybraces",
+                    colors: [.indigo, .purple]
+                ) { select(.generic) }
+
+                CallbackTemplateCard(
+                    title: "App Store",
+                    description: "Verify App Store Server Notifications and start with transaction-ready fields and rules.",
+                    symbol: "apple.logo",
+                    colors: [.orange, .pink]
+                ) { select(.appStore) }
+            }
+            .padding(20)
+        }
+        .background(Color(uiColor: .systemGroupedBackground))
+    }
+}
+
+private struct CallbackTemplateCard: View {
+    let title: LocalizedStringKey
+    let description: LocalizedStringKey
+    let symbol: String
+    let colors: [Color]
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(alignment: .leading, spacing: 20) {
+                Image(systemName: symbol)
+                    .font(.title.bold())
+                    .frame(width: 52, height: 52)
+                    .background(.white.opacity(0.18), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text(title)
+                            .font(.title2.bold())
+                        Spacer()
+                        Image(systemName: "arrow.right.circle.fill")
+                            .font(.title2)
+                    }
+                    Text(description)
+                        .font(.subheadline)
+                        .foregroundStyle(.white.opacity(0.86))
+                        .multilineTextAlignment(.leading)
+                }
+            }
+            .foregroundStyle(.white)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(22)
+            .background(
+                LinearGradient(colors: colors, startPoint: .topLeading, endPoint: .bottomTrailing),
+                in: RoundedRectangle(cornerRadius: 24, style: .continuous)
+            )
+            .shadow(color: colors[0].opacity(0.2), radius: 14, y: 7)
+        }
+        .buttonStyle(.plain)
+        .accessibilityHint("Creates a Callback from this template")
+    }
+}
+
 private struct CallbackHomeRow: View {
     let callback: HostedCallback
 
@@ -172,6 +434,7 @@ private struct QuickPushCard: View {
     let sendTest: () -> Void
     let customize: () -> Void
     let retry: () -> Void
+    @State private var revealsPushURL = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
@@ -191,25 +454,38 @@ private struct QuickPushCard: View {
             }
 
             if let pushURL {
-                Button(action: copyURL) {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Label(copied ? "Copied" : "Device Push URL", systemImage: copied ? "checkmark" : "link")
-                            .font(.caption.weight(.semibold))
-                        Text(pushURL)
-                            .font(.caption.monospaced())
-                            .lineLimit(3)
-                            .multilineTextAlignment(.leading)
+                HStack(spacing: 10) {
+                    Button(action: copyURL) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Label(copied ? "Copied" : "Device Push URL", systemImage: copied ? "checkmark" : "link")
+                                .font(.caption.weight(.semibold))
+                            Text(revealsPushURL ? pushURL : maskedPushURL(pushURL))
+                                .font(.caption.monospaced())
+                                .lineLimit(revealsPushURL ? 3 : 2)
+                                .multilineTextAlignment(.leading)
+                        }
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .contentShape(Rectangle())
                     }
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(14)
-                    .background(.black.opacity(0.16), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-                    .contentShape(Rectangle())
+                    .buttonStyle(.plain)
+                    .sensoryFeedback(.success, trigger: copied)
+                    .accessibilityLabel(copied ? "Push URL copied" : "Copy Push URL")
+                    .accessibilityHint("Copies this device's private Push URL")
+
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) { revealsPushURL.toggle() }
+                    } label: {
+                        Image(systemName: revealsPushURL ? "eye.slash" : "eye")
+                            .font(.body.weight(.semibold))
+                            .frame(width: 36, height: 36)
+                            .background(.white.opacity(0.14), in: Circle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(revealsPushURL ? "Hide Push URL" : "Show Push URL")
                 }
-                .buttonStyle(.plain)
-                .sensoryFeedback(.success, trigger: copied)
-                .accessibilityLabel(copied ? "Push URL copied" : "Copy Push URL")
-                .accessibilityHint("Copies this device's private Push URL")
+                .padding(14)
+                .background(.black.opacity(0.16), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
 
                 HStack(spacing: 10) {
                     cardAction("cURL", systemImage: "chevron.left.forwardslash.chevron.right", action: showCurl)
@@ -246,6 +522,17 @@ private struct QuickPushCard: View {
         }
         .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
         .shadow(color: Color.indigo.opacity(0.25), radius: 18, y: 8)
+    }
+
+    private func maskedPushURL(_ value: String) -> String {
+        guard let components = URLComponents(string: value),
+              let scheme = components.scheme,
+              let host = components.host else {
+            return "••••••••••••"
+        }
+        let port = components.port.map { ":\($0)" } ?? ""
+        let visiblePath = components.path.hasPrefix("/push/") ? "/push/" : "/"
+        return "\(scheme)://\(host)\(port)\(visiblePath)••••••••••••"
     }
 
     private func cardAction(_ title: String, systemImage: String, disabled: Bool = false, action: @escaping () -> Void) -> some View {
@@ -334,6 +621,8 @@ struct SettingsView: View {
     @EnvironmentObject private var store: CallbackStore
     @Environment(\.openURL) private var openURL
     @State private var confirmsDeviceKeyReset = false
+    @State private var exportingMigration = false
+    @State private var importingMigration = false
     @State private var copiedDeviceToken = false
     @State private var toastMessage: String?
     @AppStorage("appLanguage") private var appLanguage = AppLanguage.system.rawValue
@@ -390,6 +679,17 @@ struct SettingsView: View {
                 }
 
                 Section {
+                    Button("Move to a New Device") { exportingMigration = true }
+                        .disabled(!store.connected)
+                    Button("Migrate from Another Device") { importingMigration = true }
+                        .disabled(!store.connected)
+                } header: {
+                    Text("Device Migration")
+                } footer: {
+                    Text("Moves your Callbacks, templates, history and Push URL to another device. URLs in App Store Connect and other services stay the same.")
+                }
+
+                Section {
                     if store.pushURL != nil {
                         Button("Reset Device Key", role: .destructive) { confirmsDeviceKeyReset = true }
                     } else {
@@ -428,6 +728,8 @@ struct SettingsView: View {
                         .accessibilityAddTraits(.isStaticText)
                 }
             }
+            .sheet(isPresented: $exportingMigration) { MigrationExportView() }
+            .sheet(isPresented: $importingMigration) { MigrationImportView() }
             .confirmationDialog("Reset Device Key?", isPresented: $confirmsDeviceKeyReset, titleVisibility: .visible) {
                 Button("Reset Key", role: .destructive) {
                     Task {
@@ -677,11 +979,18 @@ struct CallbackDetailView: View {
                         NavigationLink("Recent notifications") { CallbackHistoryView(id: id) }
                     }
                     Section {
-                        Text("Rules run from lowest priority number to highest. The first matching rule wins. No match means no notification.")
-                        ForEach(callback.rules.sorted { $0.priority < $1.priority }) { rule in
-                            LabeledContent(rule.name, value: "\(rule.priority) · \(rule.enabled ? (rule.send ? "Send" : "Suppress") : "Disabled")")
+                        if callback.parser == "apple" {
+                            LabeledContent("Event templates", value: "\(callback.rules.count)")
+                            Text("Apple transactions are verified, parsed, and formatted automatically. Use Edit only if you want to customize the built-in notification templates.")
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                        } else {
+                            Text("Rules run from lowest priority number to highest. The first matching rule wins. No match means no notification.")
+                            ForEach(callback.rules.sorted { $0.priority < $1.priority }) { rule in
+                                LabeledContent(rule.name, value: "\(rule.priority) · \(rule.enabled ? (rule.send ? "Send" : "Suppress") : "Disabled")")
+                            }
                         }
-                    }
+                    } header: { Text(callback.parser == "apple" ? "Automatic processing" : "Rules") }
                     Section { Button("Delete Callback", role: .destructive) { confirmDelete = true } }
                 }
                 .disabled(busy)
@@ -715,26 +1024,59 @@ struct CallbackEditorView: View {
     @State private var saving = false
     @State private var previewing = false
     @State private var error: String?
+    private let embeddedInNavigationStack: Bool
+    private let onSaved: ((HostedCallback) -> Void)?
 
-    init(callback: HostedCallback) { _draft = State(initialValue: callback) }
+    init(
+        callback: HostedCallback,
+        embeddedInNavigationStack: Bool = false,
+        onSaved: ((HostedCallback) -> Void)? = nil
+    ) {
+        _draft = State(initialValue: callback)
+        self.embeddedInNavigationStack = embeddedInNavigationStack
+        self.onSaved = onSaved
+    }
+
+    @ViewBuilder
     var body: some View {
-        NavigationStack {
+        if embeddedInNavigationStack {
+            editorContent
+        } else {
+            NavigationStack { editorContent }
+        }
+    }
+
+    private var editorContent: some View {
             Form {
+                if draft.parser == "apple" {
+                    Section("App Store notifications") {
+                        TextField("Name", text: $draft.name)
+                        Toggle("Enabled", isOn: $draft.enabled)
+                        Label("Apple signature verification", systemImage: "checkmark.shield.fill")
+                            .foregroundStyle(.green)
+                        Label("Automatic app and environment detection", systemImage: "wand.and.stars")
+                        Text("Create the Callback, then copy its URL into App Store Connect. NotifyGo will turn every verified transaction event into a readable notification.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Section {
+                        LabeledContent("Included App Store events", value: "20 + fallback")
+                        NavigationLink("Customize templates") {
+                            AppStoreTemplateList(rules: $draft.rules)
+                        }
+                    } header: {
+                        Text("Notification templates")
+                    } footer: {
+                        Text("All templates are ready to use. Customization is optional.")
+                    }
+                } else {
                 Section("Callback") {
                     TextField("Name", text: $draft.name)
                     Toggle("Enabled", isOn: $draft.enabled)
                     Picker("Payload parser", selection: $draft.parser) {
                         Text("Generic JSON").tag("json")
                         Text("App Store transactions").tag("apple")
-                    }
-                    if draft.parser == "apple" {
-                        TextField("App Bundle ID", text: $draft.appleBundleId).textInputAutocapitalization(.never).autocorrectionDisabled()
-                        TextField("App Apple ID (required for production)", value: $draft.appleAppId, format: .number.grouping(.never)).keyboardType(.numberPad)
-                        Picker("Environment", selection: $draft.appleEnvironment) {
-                            Text("Sandbox").tag("Sandbox"); Text("Production").tag("Production")
-                        }
-                        Text("Verified fields: type, subtype, product, amount, currency, country, environment. Country uses the three-letter storefront code. Amount is in currency units, not milliunits.")
-                            .font(.footnote).foregroundStyle(.secondary)
                     }
                 }
                 Section("Source appearance") {
@@ -770,6 +1112,7 @@ struct CallbackEditorView: View {
                 } header: { Text("Rules") } footer: {
                     Text("AND conditions. Lowest priority number wins; ties use rule ID. An empty condition list matches all payloads. Missing template fields prevent sending.")
                 }
+                }
                 Section { Button("Preview sample payload") { previewing = true } }
                 if let error { Section { Text(error).foregroundStyle(.red) } }
             }
@@ -783,7 +1126,10 @@ struct CallbackEditorView: View {
                         saving = true
                         Task { @MainActor in
                             defer { saving = false }
-                            do { _ = try await store.save(draft); dismiss() } catch { self.error = error.localizedDescription }
+                            do {
+                                let saved = try await store.save(draft)
+                                if let onSaved { onSaved(saved) } else { dismiss() }
+                            } catch { self.error = error.localizedDescription }
                         }
                     }.disabled(saving || draft.name.trimmingCharacters(in: .whitespaces).isEmpty || draft.rules.isEmpty)
                 }
@@ -793,16 +1139,44 @@ struct CallbackEditorView: View {
             .onChange(of: draft.parser) {
                 guard draft.parser == "apple", draft.rules.count == 1,
                       draft.rules[0].template == CallbackTemplate(), draft.rules[0].conditions.isEmpty else { return }
-                var transaction = CallbackRule(name: "Transaction", priority: 100)
-                transaction.conditions = [CallbackCondition(field: "amount", op: "gt", value: .number(0))]
-                transaction.template.title = "{{type}} · {{product}}"
-                transaction.template.body = "{{amount}} {{currency}} · {{country}}"
-                var fallback = CallbackRule(name: "Other App Store events", priority: 1000)
-                fallback.template.title = "{{type}}"
-                fallback.template.body = "Environment: {{environment}}"
-                draft.rules = [transaction, fallback]
+                draft.rules = appStoreNotificationRules()
+            }
+    }
+}
+
+private struct AppStoreTemplateList: View {
+    @Binding var rules: [CallbackRule]
+
+    var body: some View {
+        List {
+            Section {
+                ForEach($rules) { $rule in
+                    NavigationLink {
+                        CallbackRuleEditor(rule: $rule)
+                    } label: {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(rule.name)
+                                .font(.headline)
+                            Text(rule.template.title)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+                .onDelete { rules.remove(atOffsets: $0) }
+            } footer: {
+                Text("NotifyGo chooses the first enabled template whose event conditions match. Changes apply only to this Callback.")
+            }
+
+            Section {
+                Button("Add custom template") {
+                    rules.append(CallbackRule(name: "Custom event", priority: min(9_900, rules.count * 100 + 100)))
+                }
+                .disabled(rules.count >= 30)
             }
         }
+        .navigationTitle("App Store Templates")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 

@@ -74,10 +74,20 @@ export class InstallationLock extends DurableObject<DOEnv> {
     return this.env.DB.prepare('SELECT * FROM callbacks WHERE id = ? AND owner = ?').bind(id, this.#ownerId).first<Row>();
   }
 
-  async setDevice(deviceToken: string, environment: string): Promise<string> {
+  // authHash pins the update to the credential that was checked before queuing, so a registration
+  // from a device that has just been migrated away cannot overwrite the new device's token.
+  async setDevice(deviceToken: string, environment: string, authHash: string): Promise<string> {
     return wire(this.#guard(async () => {
-      await this.env.DB.prepare('UPDATE installations SET device_token = ?, environment = ? WHERE id = ?')
-        .bind(deviceToken, environment, this.#ownerId).run();
+      const result = await this.env.DB.prepare('UPDATE installations SET device_token = ?, environment = ? WHERE id = ? AND auth_hash = ?')
+        .bind(deviceToken, environment, this.#ownerId, authHash).run();
+      return result.meta.changes ? ok({ ok: true }) : fail(401, 'Authentication required');
+    }));
+  }
+  // Hands this installation to a new device: the old credential and APNs registration stop working at once.
+  async transferOwnership(authHash: string): Promise<string> {
+    return wire(this.#guard(async () => {
+      await this.env.DB.prepare('UPDATE installations SET auth_hash = ?, device_token = NULL, badge = 0 WHERE id = ?')
+        .bind(authHash, this.#ownerId).run();
       return ok({ ok: true });
     }));
   }

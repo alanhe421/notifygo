@@ -23,6 +23,7 @@
 		A10000000000000000000016 /* CallbackStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000016 /* CallbackStore.swift */; };
 		A10000000000000000000017 /* PushDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000017 /* PushDelegate.swift */; };
 		A10000000000000000000018 /* CallbackViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000018 /* CallbackViews.swift */; };
+		A10000000000000000000040 /* DeviceMigrationViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000040 /* DeviceMigrationViews.swift */; };
 		A10000000000000000000019 /* HostedCallbackTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000019 /* HostedCallbackTests.swift */; };
 		A10000000000000000000020 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000020 /* Localizable.xcstrings */; };
 		A20000000000000000000001 /* NotifyGoNotificationService/NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000001 /* NotifyGoNotificationService/NotificationService.swift */; };
@@ -79,6 +80,7 @@
 		B10000000000000000000016 /* CallbackStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallbackStore.swift; sourceTree = "<group>"; };
 		B10000000000000000000017 /* PushDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushDelegate.swift; sourceTree = "<group>"; };
 		B10000000000000000000018 /* CallbackViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallbackViews.swift; sourceTree = "<group>"; };
+		B10000000000000000000040 /* DeviceMigrationViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceMigrationViews.swift; sourceTree = "<group>"; };
 		B10000000000000000000019 /* HostedCallbackTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostedCallbackTests.swift; sourceTree = "<group>"; };
 		B10000000000000000000020 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		B20000000000000000000001 /* NotifyGoNotificationService/NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotifyGoNotificationService/NotificationService.swift; sourceTree = SOURCE_ROOT; };
@@ -204,6 +206,7 @@
 			isa = PBXGroup;
 			children = (
 				B10000000000000000000018 /* CallbackViews.swift */,
+				B10000000000000000000040 /* DeviceMigrationViews.swift */,
 				B10000000000000000000006 /* EndpointListView.swift */,
 				B10000000000000000000007 /* EndpointEditorView.swift */,
 				B10000000000000000000008 /* EndpointDetailView.swift */,
@@ -333,6 +336,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A10000000000000000000018 /* CallbackViews.swift in Sources */,
+				A10000000000000000000040 /* DeviceMigrationViews.swift in Sources */,
 				A10000000000000000000017 /* PushDelegate.swift in Sources */,
 				A10000000000000000000016 /* CallbackStore.swift in Sources */,
 				A10000000000000000000015 /* HostedCallback.swift in Sources */,
@@ -420,6 +424,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = NotifyGo;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NotifyGoAPNsEnvironment = "$(APS_ENVIRONMENT)";
+				INFOPLIST_KEY_NSCameraUsageDescription = "NotifyGo uses the camera to scan device migration QR codes.";
 				INFOPLIST_KEY_NotifyGoServiceURL = "$(NOTIFYGO_SERVICE_URL)";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -449,6 +454,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = NotifyGo;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NotifyGoAPNsEnvironment = "$(APS_ENVIRONMENT)";
+				INFOPLIST_KEY_NSCameraUsageDescription = "NotifyGo uses the camera to scan device migration QR codes.";
 				INFOPLIST_KEY_NotifyGoServiceURL = "$(NOTIFYGO_SERVICE_URL)";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

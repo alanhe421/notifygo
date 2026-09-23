@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import CryptoKit
 import Security
 import UserNotifications
 import UIKit
@@ -11,15 +12,53 @@ private struct Installation: Codable {
     var urls: [String: String] = [:]
 }
 
+/// One-time code that moves this installation to another device. The code itself is the only secret:
+/// the server receives a lookup value and ciphertext derived from it, never the key.
+struct MigrationCode {
+    static let prefix = "NGM1-"
+    let secret: SymmetricKey
+
+    init() { secret = SymmetricKey(size: .bits256) }
+
+    init?(_ text: String) {
+        let value = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard value.hasPrefix(Self.prefix) else { return nil }
+        var encoded = String(value.dropFirst(Self.prefix.count)).replacingOccurrences(of: "-", with: "+").replacingOccurrences(of: "_", with: "/")
+        encoded += String(repeating: "=", count: (4 - encoded.count % 4) % 4)
+        guard let data = Data(base64Encoded: encoded), data.count == 32 else { return nil }
+        secret = SymmetricKey(data: data)
+    }
+
+    var text: String {
+        let encoded = secret.withUnsafeBytes { Data($0) }.base64EncodedString()
+            .replacingOccurrences(of: "+", with: "-").replacingOccurrences(of: "/", with: "_").replacingOccurrences(of: "=", with: "")
+        return Self.prefix + encoded
+    }
+
+    private func derive(_ purpose: String) -> SymmetricKey {
+        HKDF<SHA256>.deriveKey(inputKeyMaterial: secret, info: Data("notifygo-migration-\(purpose)".utf8), outputByteCount: 32)
+    }
+
+    var lookup: String { derive("lookup").withUnsafeBytes { $0.map { String(format: "%02x", $0) }.joined() } }
+    var key: SymmetricKey { derive("key") }
+}
+
+enum MigrationStatus { case pending, expired, completed }
+
+private struct MigrationSecrets: Codable {
+    var pushURL: String?
+    var urls: [String: String]
+}
+
 enum CallbackError: LocalizedError {
-    case unavailable, request(Int), invalidPayload, keychain, permission
+    case unavailable, request(Int), invalidPayload, keychain, permission, migrationCode, migration(Int)
     var errorDescription: String? {
         switch self {
         case .unavailable: "The NotifyGo service is not configured in this build. Contact the app publisher."
         case .request(let status):
             switch status {
             case 400: "Check your fields, rules and template settings."
-            case 401: "This installation could not be authenticated. Contact support."
+            case 401: "This device is no longer connected to NotifyGo. If you migrated to another device, continue there."
             case 404: "This Callback is no longer available. Refresh and try again."
             case 409: "You have reached the limit of 20 Callbacks."
             case 410: "This Callback is paused. Enable it before sending a test."
@@ -31,6 +70,14 @@ enum CallbackError: LocalizedError {
         case .invalidPayload: "Enter a valid JSON object."
         case .keychain: "Your credentials could not be saved securely. Please try again."
         case .permission: "Notifications are disabled. Enable them in Settings to receive pushes."
+        case .migrationCode: "Enter a valid migration code from your other device."
+        case .migration(let status):
+            switch status {
+            case 404: "This migration code is invalid, expired or already used. Create a new one on your old device."
+            case 409: "This code can only be used on a different device that has no Callbacks."
+            case 429: "Too many requests. Try again in a minute."
+            default: "Migration could not be completed. Please try again."
+            }
         }
     }
 }
@@ -164,6 +211,63 @@ final class CallbackStore: ObservableObject {
         value.pushURL = response.pushURL
         try persist(value)
         pushURL = response.pushURL
+    }
+
+    func createMigration() async throws -> (code: MigrationCode, expiresAt: Date) {
+        guard let installation else { throw CallbackError.unavailable }
+        struct Body: Encodable { let lookup: String; let payload: String }
+        struct Response: Decodable { let expiresAt: String }
+        let code = MigrationCode()
+        let secrets = try JSONEncoder().encode(MigrationSecrets(pushURL: installation.pushURL, urls: installation.urls))
+        guard let sealed = try AES.GCM.seal(secrets, using: code.key).combined else { throw CallbackError.keychain }
+        let response: Response = try await request("v1/transfers", method: "POST", body: JSONEncoder().encode(Body(lookup: code.lookup, payload: sealed.base64EncodedString())))
+        return (code, Self.date(response.expiresAt) ?? Date().addingTimeInterval(600))
+    }
+
+    func migrationStatus() async throws -> MigrationStatus {
+        struct Response: Decodable { let pending: Bool }
+        do {
+            let response: Response = try await request("v1/transfers")
+            return response.pending ? .pending : .expired
+        } catch CallbackError.request(401) {
+            // The new device now owns this installation; forget the revoked credentials here.
+            SecItemDelete(keychainQuery as CFDictionary)
+            installation = nil
+            revision += 1
+            callbacks = []
+            pushURL = nil
+            connected = false
+            deviceRegistered = false
+            return .completed
+        }
+    }
+
+    func cancelMigration() async throws {
+        let _: JSONValue = try await request("v1/transfers", method: "DELETE")
+    }
+
+    func redeemMigration(_ text: String) async throws {
+        guard let code = MigrationCode(text) else { throw CallbackError.migrationCode }
+        struct Response: Decodable { let id: String; let token: String; let payload: String }
+        let response: Response
+        do {
+            response = try await request("v1/transfers/redeem", method: "POST", body: JSONEncoder().encode(["lookup": code.lookup]))
+        } catch CallbackError.request(let status) { throw CallbackError.migration(status) }
+        guard let data = Data(base64Encoded: response.payload),
+              let opened = try? AES.GCM.open(AES.GCM.SealedBox(combined: data), using: code.key),
+              let secrets = try? JSONDecoder().decode(MigrationSecrets.self, from: opened) else { throw CallbackError.migrationCode }
+        try persist(Installation(id: response.id, token: response.token, pushURL: secrets.pushURL, urls: secrets.urls))
+        revision += 1
+        callbacks = []
+        pushURL = secrets.pushURL
+        deviceRegistered = false
+        await refresh()
+    }
+
+    private static func date(_ value: String) -> Date? {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter.date(from: value)
     }
 
     func sendDirect(title: String, subtitle: String, body: String, url: String, icon: String, group: String, sound: String, level: String) async throws {
