@@ -4,43 +4,265 @@ import UIKit
 struct CallbackHomeView: View {
     @EnvironmentObject private var store: CallbackStore
     @State private var creating = false
+    @State private var customizing = false
+    @State private var copiedPushURL = false
+    @State private var showingCurlExample = false
+    @State private var sendingTestNotification = false
+    @State private var toastMessage: String?
 
     var body: some View {
         NavigationStack {
-            List {
-                if store.isLoading && store.callbacks.isEmpty { ProgressView("Connecting…") }
-                else if !store.connected {
-                    ContentUnavailableView("Service unavailable", systemImage: "wifi.exclamationmark", description: Text("Try connecting again. If this continues, contact the app publisher."))
-                    Button("Retry") { Task { await store.refresh() } }
-                } else if store.callbacks.isEmpty {
-                    ContentUnavailableView("No Callbacks yet", systemImage: "bell.badge", description: Text("Turn a JSON payload or App Store event into a notification."))
-                    Button("Create Callback") { creating = true }
-                }
-                ForEach(store.callbacks) { callback in
-                    NavigationLink(value: callback.id) {
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 24) {
+                    QuickPushCard(
+                        pushURL: store.pushURL,
+                        loading: store.isLoading,
+                        deviceRegistered: store.deviceRegistered,
+                        sendingTest: sendingTestNotification,
+                        copied: copiedPushURL,
+                        copyURL: copyPushURL,
+                        showCurl: { showingCurlExample = true },
+                        sendTest: sendTestNotification,
+                        customize: { customizing = true },
+                        retry: { Task { await store.refresh() } }
+                    )
+
+                    VStack(alignment: .leading, spacing: 12) {
                         HStack {
-                            SourceIcon(symbol: callback.symbol, emoji: callback.emoji, imageURL: callback.imageURL, color: callback.color)
-                            VStack(alignment: .leading) {
-                                Text(callback.name).font(.headline)
-                                Text(callback.enabled ? (callback.parser == "apple" ? "App Store transactions" : "Generic JSON") : "Paused")
-                                    .font(.subheadline).foregroundStyle(.secondary)
+                            Text("Callbacks")
+                                .font(.title2.bold())
+                            Spacer()
+                            Button { creating = true } label: {
+                                Label("New", systemImage: "plus")
                             }
+                            .disabled(!store.connected)
+                        }
+
+                    if !store.connected && !store.isLoading {
+                        ContentUnavailableView("Service unavailable", systemImage: "wifi.exclamationmark", description: Text("Try connecting again. If this continues, contact the app publisher."))
+                        Button("Retry") { Task { await store.refresh() } }
+                    } else if store.callbacks.isEmpty {
+                        ContentUnavailableView("No Callbacks yet", systemImage: "bell.badge", description: Text("Turn a JSON payload or App Store event into a notification."))
+                        Button("Create Callback") { creating = true }
+                    } else {
+                        ForEach(store.callbacks) { callback in
+                            NavigationLink(value: callback.id) {
+                                CallbackHomeRow(callback: callback)
+                            }
+                            .buttonStyle(.plain)
                         }
                     }
+                    }
                 }
+                .padding(.horizontal, 16)
+                .padding(.bottom, 24)
             }
+            .background(Color(uiColor: .systemGroupedBackground))
             .navigationTitle("NotifyGo")
             .refreshable { await store.refresh() }
-            .toolbar {
-                Button { creating = true } label: { Image(systemName: "plus") }
-                    .accessibilityLabel("Create Callback").disabled(!store.connected)
-            }
             .navigationDestination(for: String.self) { CallbackDetailView(id: $0) }
             .sheet(isPresented: $creating) { CallbackEditorView(callback: HostedCallback()) }
+            .sheet(isPresented: $customizing) { DirectPushView() }
+            .sheet(isPresented: $showingCurlExample) {
+                if let pushURL = store.pushURL {
+                    CurlExampleSheet(example: curlExample(for: pushURL))
+                        .presentationDetents([.medium, .large])
+                        .presentationDragIndicator(.visible)
+                }
+            }
+            .overlay(alignment: .bottom) {
+                if let toastMessage {
+                    CopyToast(message: toastMessage)
+                        .padding(.bottom, 16)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+            }
             .alert("NotifyGo", isPresented: Binding(get: { store.error != nil }, set: { if !$0 { store.error = nil } })) {
                 Button("OK", role: .cancel) { store.error = nil }
             } message: { Text(store.error ?? "") }
         }
+    }
+
+    private func copyPushURL() {
+        guard let pushURL = store.pushURL else { return }
+        UIPasteboard.general.setItems([[UIPasteboard.typeAutomatic: pushURL]], options: [.localOnly: true, .expirationDate: Date().addingTimeInterval(120)])
+        copiedPushURL = true
+        showToast("Copied to clipboard")
+    }
+
+    private func curlExample(for pushURL: String) -> String {
+        """
+        curl --request POST '\(pushURL)' \\
+          --header 'Content-Type: application/json' \\
+          --data '{
+            "title": "Hello from NotifyGo",
+            "subtitle": "Production",
+            "body": "Your notification message.",
+            "url": "https://example.com",
+            "icon": "https://example.com/icon.png",
+            "group": "server-monitoring",
+            "sound": "default",
+            "level": "active"
+          }'
+        """
+    }
+
+    private func sendTestNotification() {
+        sendingTestNotification = true
+        Task { @MainActor in
+            defer { sendingTestNotification = false }
+            do {
+                try await store.sendDirect(title: "NotifyGo Test", subtitle: "", body: "Your device notification is working.", url: "", icon: "", group: "", sound: "default", level: "active")
+                showToast("Test notification sent")
+            } catch {
+                store.report(error)
+            }
+        }
+    }
+
+    private func showToast(_ message: String) {
+        withAnimation(.easeOut(duration: 0.2)) { toastMessage = message }
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(1.5))
+            withAnimation(.easeIn(duration: 0.2)) {
+                toastMessage = nil
+                copiedPushURL = false
+            }
+        }
+    }
+}
+
+private struct CallbackHomeRow: View {
+    let callback: HostedCallback
+
+    private var detail: String {
+        guard callback.enabled else { return "Paused" }
+        return callback.parser == "apple" ? "App Store transactions" : "Generic JSON"
+    }
+
+    var body: some View {
+        HStack {
+            SourceIcon(symbol: callback.symbol, emoji: callback.emoji, imageURL: callback.imageURL, color: callback.color)
+            VStack(alignment: .leading) {
+                Text(callback.name)
+                    .font(.headline)
+                Text(detail)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            Image(systemName: "chevron.right")
+                .font(.caption.bold())
+                .foregroundStyle(.tertiary)
+        }
+        .padding(16)
+        .background(.background, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .shadow(color: .black.opacity(0.06), radius: 12, y: 5)
+    }
+}
+
+private struct QuickPushCard: View {
+    let pushURL: String?
+    let loading: Bool
+    let deviceRegistered: Bool
+    let sendingTest: Bool
+    let copied: Bool
+    let copyURL: () -> Void
+    let showCurl: () -> Void
+    let sendTest: () -> Void
+    let customize: () -> Void
+    let retry: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            HStack(spacing: 12) {
+                Image(systemName: "paperplane.fill")
+                    .font(.title2)
+                    .foregroundStyle(.white)
+                    .frame(width: 42, height: 42)
+                    .background(.white.opacity(0.18), in: Circle())
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Quick Push")
+                        .font(.title2.bold())
+                    Text("Send directly to this device")
+                        .font(.subheadline)
+                        .foregroundStyle(.white.opacity(0.78))
+                }
+            }
+
+            if let pushURL {
+                Button(action: copyURL) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Label(copied ? "Copied" : "Device Push URL", systemImage: copied ? "checkmark" : "link")
+                            .font(.caption.weight(.semibold))
+                        Text(pushURL)
+                            .font(.caption.monospaced())
+                            .lineLimit(3)
+                            .multilineTextAlignment(.leading)
+                    }
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(14)
+                    .background(.black.opacity(0.16), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .sensoryFeedback(.success, trigger: copied)
+                .accessibilityLabel(copied ? "Push URL copied" : "Copy Push URL")
+                .accessibilityHint("Copies this device's private Push URL")
+
+                HStack(spacing: 10) {
+                    cardAction("cURL", systemImage: "chevron.left.forwardslash.chevron.right", action: showCurl)
+                    cardAction(sendingTest ? "Sending…" : "Test", systemImage: "paperplane", disabled: sendingTest || !deviceRegistered, action: sendTest)
+                    cardAction("Customize", systemImage: "slider.horizontal.3", action: customize)
+                }
+            } else if loading {
+                ProgressView("Preparing Quick Push…")
+                    .tint(.white)
+                    .foregroundStyle(.white)
+            } else {
+                Text("Connect to create this device's private Push URL.")
+                    .foregroundStyle(.white.opacity(0.82))
+                Button("Retry", action: retry)
+                    .buttonStyle(.borderedProminent)
+                    .tint(.white.opacity(0.2))
+            }
+        }
+        .foregroundStyle(.white)
+        .padding(20)
+        .background {
+            ZStack(alignment: .topTrailing) {
+                LinearGradient(
+                    colors: [Color(red: 0.16, green: 0.10, blue: 0.72), Color(red: 0.37, green: 0.18, blue: 0.94)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                Circle()
+                    .fill(Color(red: 1.0, green: 0.34, blue: 0.15).opacity(0.9))
+                    .frame(width: 150, height: 150)
+                    .blur(radius: 18)
+                    .offset(x: 50, y: -70)
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .shadow(color: Color.indigo.opacity(0.25), radius: 18, y: 8)
+    }
+
+    private func cardAction(_ title: String, systemImage: String, disabled: Bool = false, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            VStack(spacing: 5) {
+                Image(systemName: systemImage)
+                Text(title)
+                    .font(.caption.weight(.semibold))
+                    .lineLimit(1)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 10)
+            .foregroundStyle(.white.opacity(disabled ? 0.45 : 1))
+            .background(.black.opacity(disabled ? 0.08 : 0.18), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .disabled(disabled)
     }
 }
 
@@ -111,13 +333,9 @@ private struct NotificationHistoryRow: View {
 struct SettingsView: View {
     @EnvironmentObject private var store: CallbackStore
     @Environment(\.openURL) private var openURL
-    @State private var customizing = false
     @State private var confirmsDeviceKeyReset = false
-    @State private var copiedPushURL = false
     @State private var copiedDeviceToken = false
-    @State private var showingCurlExample = false
     @State private var toastMessage: String?
-    @State private var sendingTestNotification = false
 
     var body: some View {
         NavigationStack {
@@ -162,41 +380,17 @@ struct SettingsView: View {
                 }
 
                 Section {
-                    if let pushURL = store.pushURL {
-                        Button {
-                            UIPasteboard.general.setItems([[UIPasteboard.typeAutomatic: pushURL]], options: [.localOnly: true, .expirationDate: Date().addingTimeInterval(120)])
-                            copiedPushURL = true
-                            showCopyToast()
-                        } label: {
-                            Text(pushURL)
-                                .font(.footnote.monospaced())
-                                .foregroundStyle(.primary)
-                                .multilineTextAlignment(.leading)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            .contentShape(Rectangle())
-                        }
-                        .buttonStyle(.plain)
-                        .sensoryFeedback(.success, trigger: copiedPushURL)
-                        .accessibilityLabel(copiedPushURL ? "Push URL copied" : "Copy Push URL")
-                        .accessibilityHint("Copies this device's Push URL to the clipboard")
-                        Button("cURL Example") {
-                            showingCurlExample = true
-                        }
-                        Button(sendingTestNotification ? "Sending Test…" : "Send Test to This Device") {
-                            sendTestNotification()
-                        }
-                        .disabled(sendingTestNotification || !store.deviceRegistered)
-                        Button("Customize notification") { customizing = true }
+                    if store.pushURL != nil {
                         Button("Reset Device Key", role: .destructive) { confirmsDeviceKeyReset = true }
                     } else {
-                        Text("A Push URL will appear after this device connects.")
+                        Text("A device key will appear after this device connects.")
                             .foregroundStyle(.secondary)
                     }
                 } header: {
-                    Text("This Device")
+                    Text("Device Security")
                 } footer: {
                     VStack(spacing: 16) {
-                        Text("This URL sends a custom notification directly to this device. Callback URLs are managed separately.")
+                        Text("Resetting the device key invalidates the current Quick Push URL immediately. Callback URLs are not affected.")
                             .frame(maxWidth: .infinity, alignment: .leading)
                         HStack(spacing: 4) {
                             Image(systemName: "app.badge.fill")
@@ -224,20 +418,11 @@ struct SettingsView: View {
                         .accessibilityAddTraits(.isStaticText)
                 }
             }
-            .sheet(isPresented: $customizing) { DirectPushView() }
-            .sheet(isPresented: $showingCurlExample) {
-                if let pushURL = store.pushURL {
-                    CurlExampleSheet(example: curlExample(for: pushURL))
-                        .presentationDetents([.medium, .large])
-                        .presentationDragIndicator(.visible)
-                }
-            }
             .confirmationDialog("Reset Device Key?", isPresented: $confirmsDeviceKeyReset, titleVisibility: .visible) {
                 Button("Reset Key", role: .destructive) {
                     Task {
                         do {
                             try await store.rotateDeviceKey()
-                            copiedPushURL = false
                         } catch {
                             store.report(error)
                         }
@@ -260,23 +445,6 @@ struct SettingsView: View {
         return "\(version) (\(build))"
     }
 
-    private func curlExample(for pushURL: String) -> String {
-        """
-        curl --request POST '\(pushURL)' \\
-          --header 'Content-Type: application/json' \\
-          --data '{
-            "title": "Hello from NotifyGo",
-            "subtitle": "Production",
-            "body": "Your notification message.",
-            "url": "https://example.com",
-            "icon": "https://example.com/icon.png",
-            "group": "server-monitoring",
-            "sound": "default",
-            "level": "active"
-          }'
-        """
-    }
-
     private func showCopyToast() {
         withAnimation(.easeOut(duration: 0.2)) {
             toastMessage = "Copied to clipboard"
@@ -285,44 +453,23 @@ struct SettingsView: View {
             try? await Task.sleep(for: .seconds(1.5))
             withAnimation(.easeIn(duration: 0.2)) {
                 toastMessage = nil
-                copiedPushURL = false
                 copiedDeviceToken = false
             }
         }
     }
+}
 
-    private func sendTestNotification() {
-        sendingTestNotification = true
-        Task { @MainActor in
-            defer { sendingTestNotification = false }
-            do {
-                try await store.sendDirect(
-                    title: "NotifyGo Test",
-                    subtitle: "",
-                    body: "Your device notification is working.",
-                    url: "",
-                    icon: "",
-                    group: "",
-                    sound: "default",
-                    level: "active"
-                )
-                showToast("Test notification sent")
-            } catch {
-                store.report(error)
-            }
-        }
-    }
+private struct CopyToast: View {
+    let message: String
 
-    private func showToast(_ message: String) {
-        withAnimation(.easeOut(duration: 0.2)) {
-            toastMessage = message
-        }
-        Task { @MainActor in
-            try? await Task.sleep(for: .seconds(1.5))
-            withAnimation(.easeIn(duration: 0.2)) {
-                toastMessage = nil
-            }
-        }
+    var body: some View {
+        Text(message)
+            .font(.subheadline.weight(.medium))
+            .foregroundStyle(.white)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .background(.black.opacity(0.82), in: Capsule())
+            .accessibilityAddTraits(.isStaticText)
     }
 }
 
