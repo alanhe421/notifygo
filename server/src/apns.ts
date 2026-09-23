@@ -1,4 +1,4 @@
-import { createPrivateKey, sign } from 'node:crypto';
+import { sign } from 'node:crypto';
 import type { Callback, NotificationTemplate } from './domain.ts';
 
 export type Push = {
@@ -22,7 +22,6 @@ export function apnsPayload(push: Push) {
   };
 }
 export function createAPNsSender(config: { teamId: string; keyId: string; privateKey: string; topic: string }) {
-  const key = createPrivateKey(config.privateKey);
   let jwt = '', issuedAt = 0;
   return async (push: Push) => {
     const now = Math.floor(Date.now() / 1000);
@@ -30,7 +29,7 @@ export function createAPNsSender(config: { teamId: string; keyId: string; privat
       const header = Buffer.from(JSON.stringify({ alg: 'ES256', kid: config.keyId })).toString('base64url');
       const claims = Buffer.from(JSON.stringify({ iss: config.teamId, iat: now })).toString('base64url');
       const input = `${header}.${claims}`;
-      jwt = `${input}.${sign('sha256', Buffer.from(input), { key, dsaEncoding: 'ieee-p1363' }).toString('base64url')}`;
+      jwt = `${input}.${sign('sha256', Buffer.from(input), { key: config.privateKey, dsaEncoding: 'ieee-p1363' }).toString('base64url')}`;
       issuedAt = now;
     }
     const payload = JSON.stringify(apnsPayload(push));
