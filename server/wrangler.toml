@@ -1,0 +1,49 @@
+name = "notifygo-server"
+main = "src/index.ts"
+compatibility_date = "2025-09-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Public HTTPS origin this Worker is reachable at (custom domain or workers.dev route), no path/query.
+[vars]
+PUBLIC_URL = "https://notifygo.1991421.cn"
+APNS_TOPIC = "cn.aol.NotifyGo"
+
+# Secrets (never in this file): wrangler secret put APNS_TEAM_ID / APNS_KEY_ID / APNS_PRIVATE_KEY
+# APNS_PRIVATE_KEY is the full contents of the publisher's .p8 key file (PEM text).
+
+[[d1_databases]]
+binding = "DB"
+database_name = "notifygo"
+database_id = "df1a4e16-dea5-4cfe-9cf5-caa5952b1f58"
+migrations_dir = "migrations"
+
+[[durable_objects.bindings]]
+name = "LOCKS"
+class_name = "InstallationLock"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["InstallationLock"]
+
+[[unsafe.bindings]]
+name = "RATE_IP"
+type = "ratelimit"
+namespace_id = "1001"
+simple = { limit = 300, period = 60 }
+
+[[unsafe.bindings]]
+name = "RATE_SIGNUP"
+type = "ratelimit"
+namespace_id = "1002"
+simple = { limit = 5, period = 60 }
+
+[[unsafe.bindings]]
+name = "RATE_OWNER"
+type = "ratelimit"
+namespace_id = "1003"
+simple = { limit = 120, period = 60 }
+
+[[rules]]
+type = "Data"
+globs = ["**/*.cer"]
+fallthrough = true

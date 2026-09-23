@@ -1,24 +1,20 @@
 # NotifyGo publisher service
 
-This is an operator-run Node.js 24+ service using SQLite and direct APNs HTTP/2. It can run as one supervised process on the publisher's Tencent Cloud LH host behind an HTTPS reverse proxy. It is not a Cloudflare Worker, and end users never configure or deploy it.
+The production service runs on Cloudflare Workers with D1 and a Durable Object per installation. It exposes a Bark-style Device Push URL for direct custom notifications and separate Callback URLs for Generic JSON or verified App Store Server Notifications with rules and templates.
 
 ## Configuration
 
-Install dependencies with `npm ci --omit=dev --ignore-scripts`. Set these values through the host's private environment/secret manager:
+Install dependencies with `npm ci --ignore-scripts`. Public bindings are defined in `wrangler.toml`; set APNs credentials through `wrangler secret put` and never commit them:
 
 | Variable | Purpose |
 | --- | --- |
-| `PUBLIC_URL` | Public HTTPS origin, without a path/query |
+| `PUBLIC_URL` | Public HTTPS origin, currently `https://notifygo.1991421.cn` |
 | `APNS_TEAM_ID` | NotifyGo publisher's Apple team |
 | `APNS_KEY_ID` | APNs authentication key identifier |
-| `APNS_KEY_FILE` | Absolute path to the publisher's protected `.p8` file |
+| `APNS_PRIVATE_KEY` | Full contents of the publisher's protected `.p8` file |
 | `APNS_TOPIC` | NotifyGo app Bundle ID, default project identity `cn.aol.NotifyGo` |
-| `DATABASE_PATH` | Persistent database file; default `./data/notifygo.sqlite` |
-| `HOST` / `PORT` | Defaults `127.0.0.1` / `8080` |
-| `TRUSTED_PROXY_CIDRS` | Comma-separated exact trusted proxy ranges; omit for direct access. For a local reverse proxy use `127.0.0.1/32,::1/128`; the proxy must overwrite forwarding headers. |
-| `APPLE_ROOT_CA_FILES` | Comma-separated DER root certificate files; default `./certs/AppleRootCA-G3.cer` |
 
-Run `npm start` with the working directory set to `server/`. Startup refuses missing APNs credentials or a non-HTTPS public origin. Bind only to loopback when using a local proxy. Use a service supervisor, persistent disk and an unprivileged service user. Keep one process per database: in-process delivery/config serialization is intentional; do not use a cluster or multiple replicas against the same file.
+Deploy with `npx wrangler d1 migrations apply notifygo --remote` followed by `npx wrangler deploy`. Per-installation serialization is provided by `InstallationLock`; persistent configuration and history live in D1.
 
 The app has no server URL input. The publisher supplies `NOTIFYGO_SERVICE_URL` at build time after provisioning this service. Deploying the service, adding DNS/TLS and signing/releasing the app are separate operator actions.
 
@@ -30,6 +26,8 @@ Management endpoints use `Authorization: Bearer <installation token>`, except re
 | --- | --- |
 | `POST /v1/installations` with `{}` | New anonymous installation and one-time token |
 | `PUT /v1/device` | `{token, environment: "development" or "production"}` |
+| `POST /v1/device/rotate` | Rotate and return this installation's Device Push URL |
+| `GET/POST /push/:deviceKey` | Send a custom notification directly to the registered device |
 | `GET /v1/callbacks` | Installation's configurations; never secrets |
 | `POST /v1/callbacks` | Create, returning configuration, ID and one-time `callbackURL` |
 | `PUT /v1/callbacks/:id` | Replace validated configuration, including enabled state |
@@ -82,10 +80,10 @@ The bundled root is downloaded unchanged from [Apple Root CA G3](https://www.app
 - Apple notification UUIDs and explicit generic idempotency keys deduplicate successful/suppressed events for 30 days, independently of the 50-entry history limit. Generic requests without a key and manual test requests are separate events.
 - Delivery is **at least once**, not exactly once: an APNs acceptance followed by a process/database failure can be repeated on retry. On restart, incomplete `sending` entries are marked failed. A sender that does not retry can lose an event after a crash; a durable outbox is outside this synchronous MVP.
 - Badge changes, key rotation, config updates and delivery serialize per installation. Rotation waits for already-started deliveries; once reset returns, old-key requests cannot start a delivery. A previously accepted APNs notification can still arrive later.
-- Request body limit: 64 KiB. APNs payload limit: 4 KiB of UTF-8. Max 20 Callbacks/installation, 30 rules/Callback, 20 conditions/rule. Limits per minute: 5 registrations/IP, 300 requests/IP, 120 management requests/installation, 60 push attempts/installation. At most 8 outstanding serialized operations per installation and 100 globally. Rate state is process-local.
+- Request body limit: 64 KiB. APNs payload limit: 4 KiB of UTF-8. Max 20 Callbacks/installation, 30 rules/Callback, 20 conditions/rule. Limits per minute: 5 registrations/IP, 300 requests/IP, 120 management requests/installation and 60 push attempts/installation.
 - Protect the database and backups: it contains device tokens, notification content and transaction details. Installation tokens and Callback secrets are stored as SHA-256 hashes. The client keeps one-time URLs and credentials in Keychain; reset a key if its URL is lost.
-- Application request logging is off. Configure the reverse proxy/APM to omit or redact `/c/...` URLs, query strings and authorization headers. Do not send Webhook URLs to analytics. Review proxy trust and rate limiting before public launch.
-- Take consistent SQLite backups including WAL state using a SQLite backup facility; do not just copy an active main database file. Monitor disk usage, APNs failures and 429/503 rates. Configure operator-controlled retention/quotas before expanding beyond this MVP.
+- Application request logging is off. Any observability integration must redact `/c/...` and `/push/...` URLs, query strings and authorization headers. Do not send webhook or Device Push URLs to analytics.
+- Use D1 backups/time travel according to the Cloudflare account retention policy. Monitor APNs failures and 429/503 rates before expanding beyond this MVP.
 
 ## Acceptance checklist
 

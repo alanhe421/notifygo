@@ -1,6 +1,5 @@
-import { Environment, SignedDataVerifier } from '@apple/app-store-server-library';
 import type { Callback, Fields } from './domain.ts';
-import type { ResponseBodyV2DecodedPayload, JWSTransactionDecodedPayload, JWSRenewalInfoDecodedPayload } from '@apple/app-store-server-library';
+import type { ResponseBodyV2DecodedPayload, JWSTransactionDecodedPayload, JWSRenewalInfoDecodedPayload, SignedDataVerifier } from '@apple/app-store-server-library';
 
 // Keep the official verifier's bounded certificate/OCSP cache across requests.
 const verifiers = new Map<string, SignedDataVerifier>();
@@ -8,6 +7,9 @@ const verifiers = new Map<string, SignedDataVerifier>();
 export async function parseApple(callback: Callback, payload: Fields, roots: Buffer[]): Promise<Fields> {
   if (!roots.length) throw new Error('Apple trust roots are not configured');
   if (typeof payload.signedPayload !== 'string') throw new Error('signedPayload is required');
+  // jsrsasign initializes randomness while loading. Workers only permits that inside a request handler,
+  // so keep the Apple verifier out of module-global evaluation.
+  const { Environment, SignedDataVerifier } = await import('@apple/app-store-server-library');
   const environment = callback.appleEnvironment === 'Production' ? Environment.PRODUCTION : Environment.SANDBOX;
   const cacheKey = JSON.stringify([environment, callback.appleBundleId, callback.appleAppId, roots.map(root => root.toString('base64'))]);
   let verifier = verifiers.get(cacheKey);
