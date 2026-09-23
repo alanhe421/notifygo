@@ -115,6 +115,7 @@ struct SettingsView: View {
     @State private var confirmsDeviceKeyReset = false
     @State private var copiedPushURL = false
     @State private var copiedDeviceToken = false
+    @State private var showingCurlExample = false
     @State private var toastMessage: String?
     @State private var sendingTestNotification = false
 
@@ -178,6 +179,9 @@ struct SettingsView: View {
                         .sensoryFeedback(.success, trigger: copiedPushURL)
                         .accessibilityLabel(copiedPushURL ? "Push URL copied" : "Copy Push URL")
                         .accessibilityHint("Copies this device's Push URL to the clipboard")
+                        Button("cURL Example") {
+                            showingCurlExample = true
+                        }
                         Button(sendingTestNotification ? "Sending Test…" : "Send Test to This Device") {
                             sendTestNotification()
                         }
@@ -221,6 +225,13 @@ struct SettingsView: View {
                 }
             }
             .sheet(isPresented: $customizing) { DirectPushView() }
+            .sheet(isPresented: $showingCurlExample) {
+                if let pushURL = store.pushURL {
+                    CurlExampleSheet(example: curlExample(for: pushURL))
+                        .presentationDetents([.medium, .large])
+                        .presentationDragIndicator(.visible)
+                }
+            }
             .confirmationDialog("Reset Device Key?", isPresented: $confirmsDeviceKeyReset, titleVisibility: .visible) {
                 Button("Reset Key", role: .destructive) {
                     Task {
@@ -247,6 +258,20 @@ struct SettingsView: View {
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—"
         let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "—"
         return "\(version) (\(build))"
+    }
+
+    private func curlExample(for pushURL: String) -> String {
+        """
+        curl --request POST '\(pushURL)' \\
+          --header 'Content-Type: application/json' \\
+          --data '{
+            "title": "Hello from NotifyGo",
+            "body": "Your notification message.",
+            "url": "https://example.com",
+            "sound": "default",
+            "level": "active"
+          }'
+        """
     }
 
     private func showCopyToast() {
@@ -290,6 +315,65 @@ struct SettingsView: View {
             try? await Task.sleep(for: .seconds(1.5))
             withAnimation(.easeIn(duration: 0.2)) {
                 toastMessage = nil
+            }
+        }
+    }
+}
+
+private struct CurlExampleSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let example: String
+    @State private var copied = false
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                Button {
+                    UIPasteboard.general.setItems([[UIPasteboard.typeAutomatic: example]], options: [.localOnly: true, .expirationDate: Date().addingTimeInterval(120)])
+                    copied = true
+                } label: {
+                    Text(example)
+                        .font(.callout.monospaced())
+                        .foregroundStyle(.primary)
+                        .multilineTextAlignment(.leading)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding()
+                        .background(.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .sensoryFeedback(.success, trigger: copied)
+                .accessibilityLabel(copied ? "cURL example copied" : "Copy cURL example")
+                .accessibilityHint("Copies this request to the clipboard")
+            }
+            .contentMargins(16, for: .scrollContent)
+            .navigationTitle("cURL Example")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
+            .overlay(alignment: .bottom) {
+                if copied {
+                    Text("Copied to clipboard")
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        .background(.black.opacity(0.82), in: Capsule())
+                        .padding(.bottom, 16)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+            }
+            .onChange(of: copied) { _, value in
+                guard value else { return }
+                Task { @MainActor in
+                    try? await Task.sleep(for: .seconds(1.5))
+                    withAnimation(.easeIn(duration: 0.2)) {
+                        copied = false
+                    }
+                }
             }
         }
     }
