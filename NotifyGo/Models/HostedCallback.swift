@@ -129,4 +129,27 @@ struct CallbackEvent: Decodable, Identifiable {
     let notification: CallbackTemplate?
     let source: CallbackSource
     let test: Bool
+
+    var deliveryCategory: CallbackDeliveryCategory? {
+        switch status {
+        case "sent": .sent
+        case "failed": .failed
+        case "disabled", "unmatched", "suppressed", "missing_fields", "sending", "ready": .notSent
+        default: nil
+        }
+    }
+
+    func matches(query: String) -> Bool {
+        let query = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else { return true }
+        let values: [String?] = [notification?.title, notification?.body, source.name] + source.tags.map { Optional($0) }
+        return values.compactMap { $0 }.contains {
+            $0.range(of: query, options: [.caseInsensitive, .diacriticInsensitive], locale: .current) != nil
+        }
+    }
+}
+
+enum CallbackDeliveryCategory: String, CaseIterable, Identifiable, Equatable {
+    case sent, failed, notSent
+    var id: String { rawValue }
 }

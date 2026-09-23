@@ -189,7 +189,11 @@
 
     },
     "Callback" : {
-
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "Callback" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "Callback" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "Callback" } }
+      }
     },
     "Callback created" : {
 
@@ -308,7 +312,11 @@
       }
     },
     "Clear" : {
-
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "クリア" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "지우기" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "清除" } }
+      }
     },
     "Code expired" : {
       "localizations" : {
@@ -939,6 +947,7 @@
             "value" : "履歴を利用できません"
           }
         },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "기록을 사용할 수 없음" } },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1426,6 +1435,7 @@
             "value" : "コールバックから送信された通知がここに表示されます。"
           }
         },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "Callback에서 보낸 알림이 여기에 표시됩니다." } },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1595,7 +1605,11 @@
       }
     },
     "Recent notifications" : {
-
+      "localizations" : {
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "最近の通知" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "최근 알림" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "最近通知" } }
+      }
     },
     "Remove condition" : {
 
@@ -1928,6 +1942,7 @@
             "value" : "テスト"
           }
         },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "테스트" } },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2136,6 +2151,101 @@
         }
       }
     },
+    "All" : { "localizations" : {
+      "ja" : { "stringUnit" : { "state" : "translated", "value" : "すべて" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "전체" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "全部" } }
+    } },
+    "All Callbacks" : { "localizations" : {
+      "ja" : { "stringUnit" : { "state" : "translated", "value" : "すべての Callback" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "모든 Callback" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "全部 Callback" } }
+    } },
+    "All statuses" : { "localizations" : {
+      "ja" : { "stringUnit" : { "state" : "translated", "value" : "すべてのステータス" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "모든 상태" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "全部状态" } }
+    } },
+    "All types" : { "localizations" : {
+      "ja" : { "stringUnit" : { "state" : "translated", "value" : "すべての種類" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "모든 유형" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "全部类型" } }
+    } },
+    "Clear search and filters" : { "localizations" : {
+      "ja" : { "stringUnit" : { "state" : "translated", "value" : "検索とフィルタをクリア" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "검색 및 필터 지우기" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "清除搜索和筛选" } }
+    } },
+    "Failed" : { "localizations" : {
+      "ja" : { "stringUnit" : { "state" : "translated", "value" : "失敗" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "실패" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "失败" } }
+    } },
+    "No notification sent" : { "localizations" : {
+      "ja" : { "stringUnit" : { "state" : "translated", "value" : "通知は送信されませんでした" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "알림이 전송되지 않음" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "未发送通知" } }
+    } },
+    "No results found" : { "localizations" : {
+      "ja" : { "stringUnit" : { "state" : "translated", "value" : "結果が見つかりません" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "결과 없음" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "未找到结果" } }
+    } },
+    "Not sent" : { "localizations" : {
+      "ja" : { "stringUnit" : { "state" : "translated", "value" : "未送信" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "전송되지 않음" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "未发送" } }
+    } },
+    "Only the last 30 days and up to 50 records per Callback are searched." : { "localizations" : {
+      "ja" : { "stringUnit" : { "state" : "translated", "value" : "検索対象は過去30日間、Callback ごとに最大50件です。" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "최근 30일 이내, Callback당 최대 50개의 기록만 검색합니다." } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "仅搜索最近 30 天内、每个 Callback 最多 50 条记录。" } }
+    } },
+    "Production" : { "localizations" : {
+      "ja" : { "stringUnit" : { "state" : "translated", "value" : "本番" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "프로덕션" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "正式" } }
+    } },
+    "Search title, body, source, or tags" : { "localizations" : {
+      "ja" : { "stringUnit" : { "state" : "translated", "value" : "タイトル、本文、送信元、タグを検索" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "제목, 본문, 출처 또는 태그 검색" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "搜索标题、正文、来源或标签" } }
+    } },
+    "Sent" : { "localizations" : {
+      "ja" : { "stringUnit" : { "state" : "translated", "value" : "送信済み" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "전송됨" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已发送" } }
+    } },
+    "Try another search or clear the filters." : { "localizations" : {
+      "ja" : { "stringUnit" : { "state" : "translated", "value" : "別のキーワードを試すか、フィルタをクリアしてください。" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "다른 검색어를 사용하거나 필터를 지워 보세요." } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "请尝试其他关键词或清除筛选条件。" } }
+    } },
+    "Type" : { "localizations" : {
+      "ja" : { "stringUnit" : { "state" : "translated", "value" : "種類" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "유형" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "类型" } }
+    } },
+    "Unknown" : { "localizations" : {
+      "ja" : { "stringUnit" : { "state" : "translated", "value" : "不明" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "알 수 없음" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "未知" } }
+    } },
+    "%lld records" : { "localizations" : {
+      "ja" : { "stringUnit" : { "state" : "translated", "value" : "%lld件の記録" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "%lld개 기록" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "%lld 条记录" } }
+    } },
+    "%lld results" : { "localizations" : {
+      "ja" : { "stringUnit" : { "state" : "translated", "value" : "%lld件の結果" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "%lld개 결과" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "找到 %lld 条结果" } }
+    } },
+    "Refresh failed" : { "localizations" : {
+      "ja" : { "stringUnit" : { "state" : "translated", "value" : "更新に失敗しました" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "새로 고침 실패" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "刷新失败" } }
+    } },
     "Your Callbacks, templates, history and Push URL now belong to the new device. This device has been disconnected." : {
       "localizations" : {
         "ja" : {

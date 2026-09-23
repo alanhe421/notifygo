@@ -554,39 +554,139 @@ private struct QuickPushCard: View {
 }
 
 struct NotificationHistoryView: View {
+    var body: some View {
+        NavigationStack {
+            CallbackHistoryList(callbackID: nil)
+                .navigationTitle("History")
+        }
+    }
+}
+
+private struct CallbackHistoryList: View {
     @EnvironmentObject private var store: CallbackStore
+    let callbackID: String?
     @State private var events: [CallbackEvent] = []
     @State private var loading = true
     @State private var error: String?
+    @State private var query = ""
+    @State private var debouncedQuery = ""
+    @State private var source = ""
+    @State private var delivery: CallbackDeliveryCategory?
+    @State private var test: Bool?
 
-    var body: some View {
-        NavigationStack {
-            List {
-                if loading {
-                    ProgressView("Loading…")
-                } else if let error {
-                    ContentUnavailableView("History unavailable", systemImage: "exclamationmark.arrow.triangle.2.circlepath", description: Text(error))
-                    Button("Retry") { Task { await load() } }
-                } else if events.isEmpty {
-                    ContentUnavailableView("No notifications yet", systemImage: "tray", description: Text("Notifications sent by your Callbacks will appear here."))
-                } else {
-                    ForEach(events) { event in
-                        NotificationHistoryRow(event: event)
-                    }
-                }
-            }
-            .navigationTitle("History")
-            .refreshable { await load() }
-            .task { await load() }
+    private var filteredEvents: [CallbackEvent] {
+        events.filter { event in
+            event.matches(query: debouncedQuery)
+            && (source.isEmpty || event.source.name == source)
+            && (delivery == nil || event.deliveryCategory == delivery)
+            && (test == nil || event.test == test)
         }
     }
 
-    private func load() async {
-        loading = true
-        error = nil
+    private var hasConditions: Bool {
+        !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !source.isEmpty || delivery != nil || test != nil
+    }
+
+    private var sources: [String] {
+        Array(Set(events.map(\.source.name))).sorted { $0.localizedStandardCompare($1) == .orderedAscending }
+    }
+
+    var body: some View {
+        List {
+            if loading && events.isEmpty {
+                ForEach(0..<5, id: \.self) { _ in HistorySkeletonRow() }
+            } else if events.isEmpty, let error {
+                ContentUnavailableView {
+                    Label("History unavailable", systemImage: "exclamationmark.arrow.triangle.2.circlepath")
+                } description: {
+                    Text(error)
+                } actions: {
+                    Button("Retry") { Task { await load() } }
+                }
+            } else if events.isEmpty {
+                ContentUnavailableView("No notifications yet", systemImage: "tray", description: Text("Notifications sent by your Callbacks will appear here."))
+            } else {
+                Section {
+                    HistoryFilters(
+                        showsSource: callbackID == nil,
+                        sources: sources,
+                        source: $source,
+                        delivery: $delivery,
+                        test: $test,
+                        hasConditions: hasConditions,
+                        clear: clearConditions
+                    )
+                }
+                .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+
+                if let error {
+                    Label(error, systemImage: "exclamationmark.triangle.fill")
+                        .font(.footnote)
+                        .foregroundStyle(.orange)
+                        .accessibilityLabel(Text("Refresh failed") + Text(": ") + Text(error))
+                }
+
+                if filteredEvents.isEmpty {
+                    ContentUnavailableView {
+                        Label("No results found", systemImage: "magnifyingglass")
+                    } description: {
+                        Text("Try another search or clear the filters.")
+                    } actions: {
+                        Button("Clear search and filters", action: clearConditions)
+                    }
+                } else {
+                    Section {
+                        ForEach(filteredEvents) { event in
+                            NotificationHistoryRow(event: event, query: debouncedQuery, showsSource: callbackID == nil)
+                        }
+                    } header: {
+                        if hasConditions {
+                            Text("\(filteredEvents.count) results")
+                        } else {
+                            Text("\(filteredEvents.count) records")
+                        }
+                    }
+                }
+                Text("Only the last 30 days and up to 50 records per Callback are searched.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .modifier(HistorySearchModifier(enabled: !events.isEmpty || loading, query: $query))
+        .disabled(loading && events.isEmpty)
+        .refreshable { await load(isRefresh: true) }
+        .task { await load() }
+        .task(id: query) {
+            do { try await Task.sleep(for: .milliseconds(200)) } catch { return }
+            guard !Task.isCancelled else { return }
+            debouncedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+        .onChange(of: sources) { _, values in
+            if !source.isEmpty && !values.contains(source) { source = "" }
+        }
+    }
+
+    private func clearConditions() {
+        query = ""
+        debouncedQuery = ""
+        source = ""
+        delivery = nil
+        test = nil
+    }
+
+    @MainActor
+    private func load(isRefresh: Bool = false) async {
+        if !isRefresh && events.isEmpty { loading = true }
         defer { loading = false }
         do {
-            events = try await store.history()
+            let loaded: [CallbackEvent]
+            if let callbackID {
+                loaded = try await store.history(callbackID)
+            } else {
+                loaded = try await store.history()
+            }
+            events = loaded.sorted { $0.createdAt > $1.createdAt }
+            error = nil
         } catch is CancellationError {
         } catch {
             self.error = error.localizedDescription
@@ -594,8 +694,121 @@ struct NotificationHistoryView: View {
     }
 }
 
+private struct HistorySearchModifier: ViewModifier {
+    let enabled: Bool
+    @Binding var query: String
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if enabled {
+            content.searchable(text: $query, prompt: "Search title, body, source, or tags")
+        } else {
+            content
+        }
+    }
+}
+
+private struct HistoryFilters: View {
+    let showsSource: Bool
+    let sources: [String]
+    @Binding var source: String
+    @Binding var delivery: CallbackDeliveryCategory?
+    @Binding var test: Bool?
+    let hasConditions: Bool
+    let clear: () -> Void
+
+    var body: some View {
+        ScrollView(.horizontal) {
+            HStack(spacing: 8) {
+                if showsSource {
+                    Menu {
+                        Button("All Callbacks") { source = "" }
+                        ForEach(sources, id: \.self) { value in Button(value) { source = value } }
+                    } label: {
+                        FilterLabel(title: "Callback", value: source.isEmpty ? String(localized: "All") : source, selected: !source.isEmpty)
+                    }
+                    .accessibilityLabel(Text("Callback") + Text(", ") + Text(source.isEmpty ? String(localized: "All") : source))
+                }
+                Menu {
+                    Button("All statuses") { delivery = nil }
+                    Button("Sent") { delivery = .sent }
+                    Button("Failed") { delivery = .failed }
+                    Button("Not sent") { delivery = .notSent }
+                } label: {
+                    FilterLabel(title: "Status", value: deliveryText, selected: delivery != nil)
+                }
+                .accessibilityLabel(Text("Status") + Text(", ") + Text(deliveryText))
+
+                Menu {
+                    Button("All types") { test = nil }
+                    Button("Production") { test = false }
+                    Button("Test") { test = true }
+                } label: {
+                    FilterLabel(title: "Type", value: typeText, selected: test != nil)
+                }
+                .accessibilityLabel(Text("Type") + Text(", ") + Text(typeText))
+
+                if hasConditions {
+                    Button("Clear", action: clear)
+                        .frame(minHeight: 44)
+                }
+            }
+        }
+        .scrollIndicators(.hidden)
+    }
+
+    private var deliveryText: String {
+        switch delivery {
+        case .sent: String(localized: "Sent")
+        case .failed: String(localized: "Failed")
+        case .notSent: String(localized: "Not sent")
+        case nil: String(localized: "All")
+        }
+    }
+
+    private var typeText: String {
+        guard let test else { return String(localized: "All") }
+        return test ? String(localized: "Test") : String(localized: "Production")
+    }
+}
+
+private struct FilterLabel: View {
+    let title: LocalizedStringKey
+    let value: String
+    let selected: Bool
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Text(title)
+            Text(value).fontWeight(selected ? .semibold : .regular)
+            Image(systemName: "chevron.down").font(.caption2)
+        }
+        .padding(.horizontal, 12)
+        .frame(minHeight: 44)
+        .background(selected ? Color.accentColor.opacity(0.14) : Color.secondary.opacity(0.12), in: Capsule())
+    }
+}
+
+private struct HistorySkeletonRow: View {
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            RoundedRectangle(cornerRadius: 10).frame(width: 40, height: 40)
+            VStack(alignment: .leading, spacing: 7) {
+                RoundedRectangle(cornerRadius: 4).frame(width: 150, height: 14)
+                RoundedRectangle(cornerRadius: 4).frame(height: 12)
+                RoundedRectangle(cornerRadius: 4).frame(width: 210, height: 10)
+            }
+        }
+        .foregroundStyle(.secondary.opacity(0.2))
+        .redacted(reason: .placeholder)
+        .accessibilityHidden(true)
+    }
+}
+
 private struct NotificationHistoryRow: View {
     let event: CallbackEvent
+    let query: String
+    let showsSource: Bool
 
     var body: some View {
         DisclosureGroup {
@@ -606,14 +819,93 @@ private struct NotificationHistoryRow: View {
             HStack(alignment: .top, spacing: 12) {
                 SourceIcon(symbol: event.source.symbol, emoji: event.source.emoji, imageURL: event.source.imageURL, color: event.source.color)
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(event.notification?.title ?? event.source.name).font(.headline)
-                    Text(event.notification?.body ?? "No notification sent").lineLimit(2)
-                    Text("\(event.source.name) · \(event.status) · \(event.test ? "Test · " : "")\(event.createdAt)")
+                    HighlightedText(event.notification?.title ?? event.source.name, query: query)
+                        .font(.headline)
+                    HighlightedText(event.notification?.body ?? String(localized: "No notification sent"), query: query)
+                        .lineLimit(2)
+                    Text(metadata)
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                    if !event.source.tags.isEmpty {
+                        HighlightedText(event.source.tags.joined(separator: " · "), query: query)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
             }
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(accessibilitySummary)
+    }
+
+    private var metadata: String {
+        [showsSource ? event.source.name : nil, statusText, event.test ? String(localized: "Test") : nil, formattedDate]
+            .compactMap { $0 }
+            .joined(separator: " · ")
+    }
+
+    private var accessibilitySummary: String {
+        [event.notification?.title ?? event.source.name,
+         event.notification?.body ?? String(localized: "No notification sent"),
+         event.source.name, statusText, event.test ? String(localized: "Test") : nil, formattedDate]
+            .compactMap { $0 }
+            .joined(separator: ", ")
+    }
+
+    private var statusText: String {
+        switch event.status {
+        case "sent": String(localized: "Sent")
+        case "failed": String(localized: "Failed")
+        case "disabled", "unmatched", "suppressed", "missing_fields", "sending", "ready": String(localized: "Not sent")
+        default: String(localized: "Unknown")
+        }
+    }
+
+    private var formattedDate: String {
+        guard let date = ISO8601DateFormatter.callbackDate(from: event.createdAt) else { return event.createdAt }
+        return date.formatted(.relative(presentation: .named, unitsStyle: .abbreviated))
+    }
+}
+
+private extension ISO8601DateFormatter {
+    static func callbackDate(from value: String) -> Date? {
+        let fractional = ISO8601DateFormatter()
+        fractional.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return fractional.date(from: value) ?? ISO8601DateFormatter().date(from: value)
+    }
+}
+
+private struct HighlightedText: View {
+    let value: String
+    let query: String
+
+    init(_ value: String, query: String) {
+        self.value = value
+        self.query = query.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    var body: some View {
+        Text(attributedValue)
+    }
+
+    private var attributedValue: AttributedString {
+        var result = AttributedString(value)
+        guard !query.isEmpty else { return result }
+        var searchRange = value.startIndex..<value.endIndex
+        while let match = value.range(
+            of: query,
+            options: [.caseInsensitive, .diacriticInsensitive],
+            range: searchRange,
+            locale: .current
+        ) {
+            if let attributedMatch = Range(match, in: result) {
+                result[attributedMatch].foregroundColor = .accentColor
+                result[attributedMatch].inlinePresentationIntent = .stronglyEmphasized
+            }
+            guard match.upperBound < value.endIndex else { break }
+            searchRange = match.upperBound..<value.endIndex
+        }
+        return result
     }
 }
 
@@ -1337,39 +1629,9 @@ struct CallbackTestView: View {
 }
 
 struct CallbackHistoryView: View {
-    @EnvironmentObject private var store: CallbackStore
     let id: String
-    @State private var events: [CallbackEvent] = []
-    @State private var loading = true
-    @State private var error: String?
     var body: some View {
-        List {
-            if loading { ProgressView("Loading…") }
-            if let error { Text(error); Button("Retry") { Task { await load() } } }
-            if !loading && error == nil && events.isEmpty { ContentUnavailableView("No notifications yet", systemImage: "tray") }
-            ForEach(events) { event in
-                DisclosureGroup {
-                    Text(event.fields.pretty).font(.footnote.monospaced()).textSelection(.enabled)
-                } label: {
-                    HStack(alignment: .top) {
-                        SourceIcon(symbol: event.source.symbol, emoji: event.source.emoji, imageURL: event.source.imageURL, color: event.source.color)
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(event.notification?.title ?? event.source.name).font(.headline)
-                            Text(event.notification?.body ?? "No notification sent")
-                            Text("\(event.status) · \(event.test ? "Test · " : "")\(event.createdAt)").font(.caption).foregroundStyle(.secondary)
-                            if !event.source.tags.isEmpty { Text(event.source.tags.joined(separator: " · ")).font(.caption) }
-                        }
-                    }
-                }
-            }
-        }
+        CallbackHistoryList(callbackID: id)
         .navigationTitle("Recent notifications")
-        .task { await load() }
-        .refreshable { await load() }
-    }
-    private func load() async {
-        loading = true; error = nil
-        defer { loading = false }
-        do { events = try await store.history(id) } catch is CancellationError {} catch { self.error = error.localizedDescription }
     }
 }
