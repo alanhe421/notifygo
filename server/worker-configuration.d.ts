@@ -4,7 +4,7 @@
 interface __BaseEnv_Env {
 	DB: D1Database;
 	PUBLIC_URL: "https://notifygo.1991421.cn";
-	APNS_TOPIC: "cn.aol.NotifyGo";
+	APNS_TOPIC: "cn.alanhe.notifygo";
 	LOCKS: DurableObjectNamespace<import("./src/index").InstallationLock>;
 	RATE_IP: RateLimit;
 	RATE_SIGNUP: RateLimit;

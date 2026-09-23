@@ -12,7 +12,7 @@ Install dependencies with `npm ci --ignore-scripts`. Public bindings are defined
 | `APNS_TEAM_ID` | NotifyGo publisher's Apple team |
 | `APNS_KEY_ID` | APNs authentication key identifier |
 | `APNS_PRIVATE_KEY` | Full contents of the publisher's protected `.p8` file |
-| `APNS_TOPIC` | NotifyGo app Bundle ID, default project identity `cn.aol.NotifyGo` |
+| `APNS_TOPIC` | NotifyGo app Bundle ID, default project identity `cn.alanhe.notifygo` |
 
 Deploy with `npx wrangler d1 migrations apply notifygo --remote` followed by `npx wrangler deploy`. Per-installation serialization is provided by `InstallationLock`; persistent configuration and history live in D1.
 

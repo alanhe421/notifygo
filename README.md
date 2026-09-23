@@ -19,7 +19,7 @@ Source icons, color and tags appear in the app's history. The notification servi
 - Xcode 16+, iOS 17+, shared `NotifyGo` scheme.
 - Set the app target's `NOTIFYGO_SERVICE_URL` to the **publisher's** HTTPS origin. An empty value produces an explicit unavailable state, never a fake Callback URL.
 - Set your development team for the app and `NotifyGoNotificationService` extension. Enable Push Notifications and Time Sensitive Notifications for the app's identifier.
-- Match `APNS_TOPIC` to the app's `PRODUCT_BUNDLE_IDENTIFIER` (`cn.aol.NotifyGo` by default). Debug uses the development entitlement and APNs environment; Release uses production. If signing differently, override `APS_ENVIRONMENT` consistently.
+- Match `APNS_TOPIC` to the app's `PRODUCT_BUNDLE_IDENTIFIER` (`cn.alanhe.notifygo` by default). Debug uses the development entitlement and APNs environment; Release uses production. If signing differently, override `APS_ENVIRONMENT` consistently.
 - Installation credentials and Callback URLs are stored in this device's Keychain. Reinstalling on another device does not restore the installation; multi-device accounts/recovery are outside this MVP.
 - The previous local-only prototype's endpoint storage remains untouched. Those records were never live service Callbacks and are not automatically uploaded.
 

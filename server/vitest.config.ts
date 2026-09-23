@@ -17,7 +17,7 @@ export default defineConfig({
         miniflare: {
           bindings: {
             TEST_MIGRATIONS: await readD1Migrations(path.join(import.meta.dirname, 'migrations')),
-            APNS_TEAM_ID: 'TEST_TEAM', APNS_KEY_ID: 'TEST_KEY', APNS_TOPIC: 'cn.aol.NotifyGo',
+            APNS_TEAM_ID: 'TEST_TEAM', APNS_KEY_ID: 'TEST_KEY', APNS_TOPIC: 'cn.alanhe.notifygo',
             APNS_PRIVATE_KEY: privateKey.export({ type: 'pkcs8', format: 'pem' }).toString()
           }
         }

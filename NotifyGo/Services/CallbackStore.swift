@@ -61,7 +61,7 @@ final class CallbackStore: ObservableObject {
 
     private var keychainQuery: [String: Any] {
         [kSecClass as String: kSecClassGenericPassword,
-         kSecAttrService as String: "cn.aol.NotifyGo.installation",
+         kSecAttrService as String: "cn.alanhe.notifygo.installation",
          kSecAttrAccount as String: baseURL?.absoluteString ?? "unconfigured"]
     }
 

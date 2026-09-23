@@ -6,7 +6,7 @@ compatibility_flags = ["nodejs_compat"]
 # Public HTTPS origin this Worker is reachable at (custom domain or workers.dev route), no path/query.
 [vars]
 PUBLIC_URL = "https://notifygo.1991421.cn"
-APNS_TOPIC = "cn.aol.NotifyGo"
+APNS_TOPIC = "cn.alanhe.notifygo"
 
 # Secrets (never in this file): wrangler secret put APNS_TEAM_ID / APNS_KEY_ID / APNS_PRIVATE_KEY
 # APNS_PRIVATE_KEY is the full contents of the publisher's .p8 key file (PEM text).

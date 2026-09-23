@@ -34,7 +34,7 @@ test('rotation waits for in-flight delivery; no old-key delivery starts after re
 
 test('APNs rejects oversized UTF-8 payload before network access', async () => {
   const pair = generateKeyPairSync('ec', { namedCurve: 'prime256v1' });
-  const sender = createAPNsSender({ teamId: 'TEST', keyId: 'TEST', topic: 'cn.aol.NotifyGo', privateKey: pair.privateKey.export({ type: 'pkcs8', format: 'pem' }).toString() });
+  const sender = createAPNsSender({ teamId: 'TEST', keyId: 'TEST', topic: 'cn.alanhe.notifygo', privateKey: pair.privateKey.export({ type: 'pkcs8', format: 'pem' }).toString() });
   await assert.rejects(sender({
     callback: config, callbackId: 'a', deviceToken: 'a'.repeat(64), environment: 'development', eventId: 'test',
     notification: { ...config.rules[0].template, body: '中'.repeat(1500) }
