@@ -13,13 +13,15 @@ struct EndpointDetailView: View {
             if let endpoint = store.endpoint(id: endpointID) {
                 List {
                     Section { NotificationPreview(endpoint: endpoint).listRowInsets(EdgeInsets()) }
-                    Section("Push URL") {
+                    Section {
                         Text(endpoint.pushURL.absoluteString)
                             .font(.body.monospaced()).textSelection(.enabled)
                         Button { UIPasteboard.general.string = endpoint.pushURL.absoluteString } label: {
                             Label("Copy Push URL", systemImage: "doc.on.doc")
                         }
                         ShareLink(item: endpoint.pushURL) { Label("Share Push URL", systemImage: "square.and.arrow.up") }
+                    } header: {
+                        Text("Push URL")
                     } footer: {
                         Label("Mock only — the NotifyGo service is not connected.", systemImage: "exclamationmark.triangle")
                     }

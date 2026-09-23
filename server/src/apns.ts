@@ -1,4 +1,3 @@
-import { connect } from 'node:http2';
 import { createPrivateKey, sign } from 'node:crypto';
 import type { Callback, NotificationTemplate } from './domain.ts';
 
@@ -36,30 +35,28 @@ export function createAPNsSender(config: { teamId: string; keyId: string; privat
     }
     const payload = JSON.stringify(apnsPayload(push));
     if (Buffer.byteLength(payload) > 4096) throw new Error('Notification exceeds APNs payload limit');
-    await new Promise<void>((resolve, reject) => {
-      const session = connect(push.environment === 'development' ? 'https://api.sandbox.push.apple.com' : 'https://api.push.apple.com');
-      const timer = setTimeout(() => finish(new Error('APNs request timed out')), 10000);
-      let finished = false;
-      function finish(error?: Error) {
-        if (finished) return;
-        finished = true;
-        clearTimeout(timer);
-        session.destroy();
-        error ? reject(error) : resolve();
-      }
-      session.on('error', () => finish(new Error('APNs connection failed')));
-      const request = session.request({
-        ':method': 'POST', ':path': `/3/device/${push.deviceToken}`,
-        authorization: `bearer ${jwt}`, 'apns-topic': config.topic,
-        'apns-push-type': 'alert', 'apns-priority': push.notification.level === 'passive' ? '5' : '10',
-        'apns-id': push.eventId
-      });
-      let status = 0;
-      request.on('response', headers => { status = Number(headers[':status']); });
-      request.on('data', () => {});
-      request.on('error', () => finish(new Error('APNs stream failed')));
-      request.on('end', () => finish(status === 200 ? undefined : new Error(`APNs rejected notification (${status})`)));
-      request.end(payload);
+    const origin = push.environment === 'development'
+      ? 'https://api.sandbox.push.apple.com'
+      : 'https://api.push.apple.com';
+    const response = await fetch(`${origin}/3/device/${push.deviceToken}`, {
+      method: 'POST',
+      headers: {
+        authorization: `bearer ${jwt}`,
+        'apns-topic': config.topic,
+        'apns-push-type': 'alert',
+        'apns-priority': push.notification.level === 'passive' ? '5' : '10',
+        'apns-id': push.eventId,
+        'content-type': 'application/json'
+      },
+      body: payload,
+      signal: AbortSignal.timeout(10_000)
     });
+    if (!response.ok) {
+      const detail = await response.text();
+      let reason = 'Unknown';
+      try { reason = String((JSON.parse(detail) as { reason?: unknown }).reason ?? reason); } catch {}
+      console.error('APNs rejected notification', { status: response.status, reason, environment: push.environment });
+      throw new Error(`APNs rejected notification (${response.status}: ${reason})`);
+    }
   };
 }

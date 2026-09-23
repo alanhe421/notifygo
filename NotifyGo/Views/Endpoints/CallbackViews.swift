@@ -3,21 +3,11 @@ import UIKit
 
 struct CallbackHomeView: View {
     @EnvironmentObject private var store: CallbackStore
-    @Environment(\.openURL) private var openURL
     @State private var creating = false
 
     var body: some View {
         NavigationStack {
             List {
-                if !store.deviceRegistered {
-                    Section {
-                        Button("Enable notifications") { Task { await store.enableNotifications() } }
-                            .disabled(!store.connected)
-                        Button("Open notification settings") {
-                            if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
-                        }
-                    } footer: { Text("Allow notifications, create a Callback, then send a test. No server setup is needed.") }
-                }
                 if store.isLoading && store.callbacks.isEmpty { ProgressView("Connecting…") }
                 else if !store.connected {
                     ContentUnavailableView("Service unavailable", systemImage: "wifi.exclamationmark", description: Text("Try connecting again. If this continues, contact the app publisher."))
@@ -50,6 +40,292 @@ struct CallbackHomeView: View {
             .alert("NotifyGo", isPresented: Binding(get: { store.error != nil }, set: { if !$0 { store.error = nil } })) {
                 Button("OK", role: .cancel) { store.error = nil }
             } message: { Text(store.error ?? "") }
+        }
+    }
+}
+
+struct NotificationHistoryView: View {
+    @EnvironmentObject private var store: CallbackStore
+    @State private var events: [CallbackEvent] = []
+    @State private var loading = true
+    @State private var error: String?
+
+    var body: some View {
+        NavigationStack {
+            List {
+                if loading {
+                    ProgressView("Loading…")
+                } else if let error {
+                    ContentUnavailableView("History unavailable", systemImage: "exclamationmark.arrow.triangle.2.circlepath", description: Text(error))
+                    Button("Retry") { Task { await load() } }
+                } else if events.isEmpty {
+                    ContentUnavailableView("No notifications yet", systemImage: "tray", description: Text("Notifications sent by your Callbacks will appear here."))
+                } else {
+                    ForEach(events) { event in
+                        NotificationHistoryRow(event: event)
+                    }
+                }
+            }
+            .navigationTitle("History")
+            .refreshable { await load() }
+            .task { await load() }
+        }
+    }
+
+    private func load() async {
+        loading = true
+        error = nil
+        defer { loading = false }
+        do {
+            events = try await store.history()
+        } catch is CancellationError {
+        } catch {
+            self.error = error.localizedDescription
+        }
+    }
+}
+
+private struct NotificationHistoryRow: View {
+    let event: CallbackEvent
+
+    var body: some View {
+        DisclosureGroup {
+            Text(event.fields.pretty)
+                .font(.footnote.monospaced())
+                .textSelection(.enabled)
+        } label: {
+            HStack(alignment: .top, spacing: 12) {
+                SourceIcon(symbol: event.source.symbol, emoji: event.source.emoji, imageURL: event.source.imageURL, color: event.source.color)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(event.notification?.title ?? event.source.name).font(.headline)
+                    Text(event.notification?.body ?? "No notification sent").lineLimit(2)
+                    Text("\(event.source.name) · \(event.status) · \(event.test ? "Test · " : "")\(event.createdAt)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+    }
+}
+
+struct SettingsView: View {
+    @EnvironmentObject private var store: CallbackStore
+    @Environment(\.openURL) private var openURL
+    @State private var customizing = false
+    @State private var confirmsDeviceKeyReset = false
+    @State private var copiedPushURL = false
+    @State private var copiedDeviceToken = false
+    @State private var toastMessage: String?
+    @State private var sendingTestNotification = false
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section("Notifications") {
+                    LabeledContent("Status", value: store.deviceRegistered ? "Enabled" : "Not enabled")
+                    if !store.deviceRegistered {
+                        Button("Enable notifications") { Task { await store.enableNotifications() } }
+                            .disabled(!store.connected)
+                    }
+                    Button("Open notification settings") {
+                        if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
+                    }
+                }
+
+                Section {
+                    if let deviceToken = store.deviceToken {
+                        Button {
+                            UIPasteboard.general.setItems([[UIPasteboard.typeAutomatic: deviceToken]], options: [.localOnly: true, .expirationDate: Date().addingTimeInterval(120)])
+                            copiedDeviceToken = true
+                            showCopyToast()
+                        } label: {
+                            Text(deviceToken)
+                                .font(.footnote.monospaced())
+                                .foregroundStyle(.primary)
+                                .multilineTextAlignment(.leading)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .sensoryFeedback(.success, trigger: copiedDeviceToken)
+                        .accessibilityLabel(copiedDeviceToken ? "Device Token copied" : "Copy Device Token")
+                        .accessibilityHint("Copies the APNs Device Token to the clipboard")
+                    } else {
+                        Text("The Device Token will appear after notification registration completes.")
+                            .foregroundStyle(.secondary)
+                    }
+                } header: {
+                    Text("Device Token")
+                } footer: {
+                    Text("This APNs token identifies this app installation. Treat it as diagnostic information and avoid sharing it publicly.")
+                }
+
+                Section {
+                    if let pushURL = store.pushURL {
+                        Button {
+                            UIPasteboard.general.setItems([[UIPasteboard.typeAutomatic: pushURL]], options: [.localOnly: true, .expirationDate: Date().addingTimeInterval(120)])
+                            copiedPushURL = true
+                            showCopyToast()
+                        } label: {
+                            Text(pushURL)
+                                .font(.footnote.monospaced())
+                                .foregroundStyle(.primary)
+                                .multilineTextAlignment(.leading)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .sensoryFeedback(.success, trigger: copiedPushURL)
+                        .accessibilityLabel(copiedPushURL ? "Push URL copied" : "Copy Push URL")
+                        .accessibilityHint("Copies this device's Push URL to the clipboard")
+                        Button(sendingTestNotification ? "Sending Test…" : "Send Test to This Device") {
+                            sendTestNotification()
+                        }
+                        .disabled(sendingTestNotification || !store.deviceRegistered)
+                        Button("Customize notification") { customizing = true }
+                        Button("Reset Device Key", role: .destructive) { confirmsDeviceKeyReset = true }
+                    } else {
+                        Text("A Push URL will appear after this device connects.")
+                            .foregroundStyle(.secondary)
+                    }
+                } header: {
+                    Text("This Device")
+                } footer: {
+                    Text("This URL sends a custom notification directly to this device. Callback URLs are managed separately.")
+                }
+
+                Section("About") {
+                    LabeledContent("App", value: "NotifyGo")
+                    LabeledContent("Version", value: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—")
+                }
+            }
+            .navigationTitle("Settings")
+            .overlay(alignment: .bottom) {
+                if let toastMessage {
+                    Text(toastMessage)
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        .background(.black.opacity(0.82), in: Capsule())
+                        .padding(.bottom, 16)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                        .accessibilityAddTraits(.isStaticText)
+                }
+            }
+            .sheet(isPresented: $customizing) { DirectPushView() }
+            .confirmationDialog("Reset Device Key?", isPresented: $confirmsDeviceKeyReset, titleVisibility: .visible) {
+                Button("Reset Key", role: .destructive) {
+                    Task {
+                        do {
+                            try await store.rotateDeviceKey()
+                            copiedPushURL = false
+                        } catch {
+                            store.report(error)
+                        }
+                    }
+                }
+            } message: {
+                Text("The current Push URL will stop working immediately. Callback URLs are not affected.")
+            }
+            .alert("NotifyGo", isPresented: Binding(get: { store.error != nil }, set: { if !$0 { store.error = nil } })) {
+                Button("OK", role: .cancel) { store.error = nil }
+            } message: {
+                Text(store.error ?? "")
+            }
+        }
+    }
+
+    private func showCopyToast() {
+        withAnimation(.easeOut(duration: 0.2)) {
+            toastMessage = "Copied to clipboard"
+        }
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(1.5))
+            withAnimation(.easeIn(duration: 0.2)) {
+                toastMessage = nil
+                copiedPushURL = false
+                copiedDeviceToken = false
+            }
+        }
+    }
+
+    private func sendTestNotification() {
+        sendingTestNotification = true
+        Task { @MainActor in
+            defer { sendingTestNotification = false }
+            do {
+                try await store.sendDirect(
+                    title: "NotifyGo Test",
+                    body: "Your device notification is working.",
+                    url: "",
+                    sound: "default",
+                    level: "active"
+                )
+                showToast("Test notification sent")
+            } catch {
+                store.report(error)
+            }
+        }
+    }
+
+    private func showToast(_ message: String) {
+        withAnimation(.easeOut(duration: 0.2)) {
+            toastMessage = message
+        }
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(1.5))
+            withAnimation(.easeIn(duration: 0.2)) {
+                toastMessage = nil
+            }
+        }
+    }
+}
+
+struct DirectPushView: View {
+    @EnvironmentObject private var store: CallbackStore
+    @Environment(\.dismiss) private var dismiss
+    @State private var title = "Hello from NotifyGo"
+    @State private var notificationBody = "Your direct Push URL is ready."
+    @State private var destinationURL = ""
+    @State private var sound = "default"
+    @State private var level = "active"
+    @State private var sending = false
+    @State private var sent = false
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Notification") {
+                    TextField("Title", text: $title)
+                    TextField("Body", text: $notificationBody, axis: .vertical).lineLimit(3...8)
+                    TextField("Open URL (optional)", text: $destinationURL)
+                        .keyboardType(.URL).textInputAutocapitalization(.never).autocorrectionDisabled()
+                }
+                Section("Delivery") {
+                    Picker("Sound", selection: $sound) { Text("Default").tag("default"); Text("None").tag("none") }
+                    Picker("Interruption", selection: $level) {
+                        Text("Active").tag("active"); Text("Time Sensitive").tag("time-sensitive"); Text("Passive").tag("passive")
+                    }
+                }
+                if sent { Label("Notification sent", systemImage: "checkmark.circle.fill").foregroundStyle(.green) }
+            }
+            .navigationTitle("Customize")
+            .navigationBarTitleDisplayMode(.inline)
+            .disabled(sending)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("Done") { dismiss() } }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(sending ? "Sending…" : "Send") {
+                        sending = true; sent = false
+                        Task { @MainActor in
+                            defer { sending = false }
+                            do { try await store.sendDirect(title: title, body: notificationBody, url: destinationURL, sound: sound, level: level); sent = true }
+                            catch { store.report(error) }
+                        }
+                    }.disabled(title.trimmingCharacters(in: .whitespaces).isEmpty)
+                }
+            }
         }
     }
 }
@@ -97,7 +373,7 @@ struct CallbackDetailView: View {
         Group {
             if let callback = store.callbacks.first(where: { $0.id == id }) {
                 List {
-                    Section("Callback URL") {
+                    Section {
                         if let url = callback.callbackURL {
                             Text(url).font(.footnote.monospaced()).textSelection(.enabled)
                             Button(copied ? "Copied" : "Copy URL") {
@@ -106,6 +382,8 @@ struct CallbackDetailView: View {
                             }
                         } else { Text("Reset the key to obtain a new URL.") }
                         Button("Reset key", role: .destructive) { confirmRotate = true }
+                    } header: {
+                        Text("Callback URL")
                     } footer: { Text("Anyone with this URL can trigger this Callback. Resetting the key immediately invalidates the old URL.") }
                     Section {
                         Button(callback.enabled ? "Pause Callback" : "Enable Callback") {

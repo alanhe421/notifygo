@@ -7,12 +7,33 @@ struct NotifyGoApp: App {
 
     var body: some Scene {
         WindowGroup {
-            CallbackHomeView()
+            MainTabView()
                 .environmentObject(store)
                 .tint(.blue)
                 .task {
                     await store.refresh()
                     await pushDelegate.attach(store)
+                }
+        }
+    }
+}
+
+private struct MainTabView: View {
+    var body: some View {
+        TabView {
+            CallbackHomeView()
+                .tabItem {
+                    Label("Home", systemImage: "house")
+                }
+
+            NotificationHistoryView()
+                .tabItem {
+                    Label("History", systemImage: "clock")
+                }
+
+            SettingsView()
+                .tabItem {
+                    Label("Settings", systemImage: "gearshape")
                 }
         }
     }

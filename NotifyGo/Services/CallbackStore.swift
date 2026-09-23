@@ -7,6 +7,7 @@ import UIKit
 private struct Installation: Codable {
     var id: String
     var token: String
+    var pushURL: String?
     var urls: [String: String] = [:]
 }
 
@@ -24,7 +25,7 @@ enum CallbackError: LocalizedError {
             case 410: "This Callback is paused. Enable it before sending a test."
             case 422: "Apple signature verification failed. Check the signed payload, Bundle ID, App Apple ID and environment."
             case 429: "Too many requests. Try again in a minute."
-            case 502: "Push delivery failed. Enable notifications and try again."
+            case 502: "APNs could not deliver this notification. Check the device registration and publisher push configuration, then try again."
             default: "The service is unavailable. Please try again."
             }
         case .invalidPayload: "Enter a valid JSON object."
@@ -41,8 +42,9 @@ final class CallbackStore: ObservableObject {
     @Published private(set) var connected = false
     @Published var error: String?
     @Published private(set) var deviceRegistered = false
+    @Published private(set) var pushURL: String?
+    @Published private(set) var deviceToken: String?
     private var installation: Installation?
-    private var deviceToken: String?
     private var revision = 0
     private let session: URLSession
     private let baseURL: URL?
@@ -111,11 +113,13 @@ final class CallbackStore: ObservableObject {
             if installation == nil {
                 installation = try loadInstallation()
                 if installation == nil {
-                    struct Response: Decodable { let id: String; let token: String }
+                    struct Response: Decodable { let id: String; let token: String; let pushURL: String }
                     let response: Response = try await request("v1/installations", method: "POST", body: Data("{}".utf8))
-                    try persist(Installation(id: response.id, token: response.token))
+                    try persist(Installation(id: response.id, token: response.token, pushURL: response.pushURL))
                 }
             }
+            pushURL = installation?.pushURL
+            if pushURL == nil { try await rotateDeviceKey() }
             struct Response: Decodable { let callbacks: [HostedCallback] }
             let requestedRevision = revision
             let response: Response = try await request("v1/callbacks")
@@ -151,6 +155,29 @@ final class CallbackStore: ObservableObject {
         let data = try JSONEncoder().encode(["token": token, "environment": environment])
         let _: JSONValue = try await request("v1/device", method: "PUT", body: data)
         deviceRegistered = true
+    }
+
+    func rotateDeviceKey() async throws {
+        struct Response: Decodable { let pushURL: String }
+        let response: Response = try await request("v1/device/rotate", method: "POST", body: Data("{}".utf8))
+        guard var value = installation else { throw CallbackError.keychain }
+        value.pushURL = response.pushURL
+        try persist(value)
+        pushURL = response.pushURL
+    }
+
+    func sendDirect(title: String, body: String, url: String, sound: String, level: String) async throws {
+        guard let pushURL, let endpoint = URL(string: pushURL) else { throw CallbackError.unavailable }
+        struct Payload: Encodable { let title: String; let body: String; let url: String; let sound: String; let level: String }
+        var request = URLRequest(url: endpoint)
+        request.httpMethod = "POST"
+        request.timeoutInterval = 30
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONEncoder().encode(Payload(title: title, body: body, url: url, sound: sound, level: level))
+        let (_, response) = try await session.data(for: request)
+        guard let response = response as? HTTPURLResponse, (200...299).contains(response.statusCode) else {
+            throw CallbackError.request((response as? HTTPURLResponse)?.statusCode ?? 503)
+        }
     }
 
     func save(_ callback: HostedCallback) async throws -> HostedCallback {
@@ -203,5 +230,13 @@ final class CallbackStore: ObservableObject {
         struct Response: Decodable { let events: [CallbackEvent] }
         let response: Response = try await request("v1/callbacks/\(id)/history")
         return response.events
+    }
+
+    func history() async throws -> [CallbackEvent] {
+        var events: [CallbackEvent] = []
+        for callback in callbacks {
+            events.append(contentsOf: try await history(callback.id))
+        }
+        return events.sorted { $0.createdAt > $1.createdAt }
     }
 }
