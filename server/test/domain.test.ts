@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { callbackSchema, evaluate, fieldAt, matches } from '../src/domain.ts';
 import { apnsPayload } from '../src/apns.ts';
-import { normalizeApple } from '../src/apple.ts';
+import { normalizeApple, notificationIdentity } from '../src/apple.ts';
 
 export const config = () => callbackSchema.parse({ name: 'Sales', rules: [{
   id: 'default', name: 'Default', priority: 100, conditions: [],
@@ -19,6 +19,16 @@ test('Apple normalization converts milliunits, preserves currency/storefront and
   assert.equal(fields.environment, 'Production');
   assert.equal(normalizeApple('Sandbox', { notificationType: 'TEST' }).amount, undefined);
   assert.equal(normalizeApple('Sandbox', {}, { price: 0 }).amount, 0);
+});
+
+test('Apple notification identity is discovered from the signed payload before official verification', () => {
+  const encoded = Buffer.from(JSON.stringify({ data: {
+    bundleId: 'com.example.app', appAppleId: 123456789, environment: 'Production'
+  } })).toString('base64url');
+  assert.deepEqual(notificationIdentity(`header.${encoded}.signature`), {
+    bundleId: 'com.example.app', appAppleId: 123456789, environment: 'Production'
+  });
+  assert.throws(() => notificationIdentity('invalid'));
 });
 
 test('maps nested fields, renders scalars, and encodes only URL variables', () => {

@@ -119,7 +119,7 @@ test('idempotency survives history truncation and failed requests can retry', as
 test('rejects forged Apple signedPayload; only explicit preview can accept unsigned Apple sample', async () => {
   const f = await setup();
   try {
-    const c = config(); c.parser = 'apple'; c.appleBundleId = 'com.example.app';
+    const c = config(); c.parser = 'apple';
     c.rules[0].template.title = '{{type}}'; c.rules[0].template.body = '{{amount}} {{currency}}';
     const saved = await f.create(c);
     const sample = { type: 'DID_RENEW', amount: 9.99, currency: 'USD' };
@@ -133,8 +133,7 @@ test('rejects forged Apple signedPayload; only explicit preview can accept unsig
     }
     assert.equal(f.pushes.length, 0);
     assert.equal(f.db.prepare('SELECT count(*) AS n FROM events').get()!.n, 0);
-    c.appleEnvironment = 'Production';
-    assert.equal((await f.app.inject({ method: 'POST', url: '/v1/callbacks', headers: f.headers, payload: c })).statusCode, 400);
+    assert.equal((await f.app.inject({ method: 'POST', url: '/v1/callbacks', headers: f.headers, payload: c })).statusCode, 201);
   } finally { await f.close(); }
 });
 

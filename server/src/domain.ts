@@ -47,8 +47,6 @@ export const callbackSchema = z.object({
     ctx.addIssue({ code: 'custom', message: 'Rule IDs must be unique' });
   if (new Set(c.mappings.map(m => m.field)).size !== c.mappings.length)
     ctx.addIssue({ code: 'custom', message: 'Mapping aliases must be unique' });
-  if (c.parser === 'apple' && (!c.appleBundleId || (c.appleEnvironment === 'Production' && !c.appleAppId)))
-    ctx.addIssue({ code: 'custom', message: 'Apple parser requires bundle ID and production App Apple ID' });
 });
 export type Callback = z.infer<typeof callbackSchema>;
 export type NotificationTemplate = z.infer<typeof templateSchema>;
